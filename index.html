@@ -240,10 +240,6 @@ svg .pulse{animation:softpulse 1.6s var(--ease) infinite}
 .szbarwrap{position:relative;height:20px;background:var(--g10);border-radius:3px;overflow:visible}
 .szbar{height:100%;border-radius:3px;transition:width .7s var(--ease)}
 .szval{font-family:var(--mono);font-size:11.5px;color:var(--g95);text-align:right}
-.gpuline{position:absolute;top:-4px;bottom:-4px;width:1.5px;background:var(--g60)}
-.gpuline i{position:absolute;top:-14px;left:-2px;font-style:normal;font-family:var(--mono);font-size:8.5px;color:var(--g50);white-space:nowrap}
-.fitnote{font-size:11.5px;color:var(--g60);margin-top:14px;line-height:1.6}
-.fitnote b{color:var(--p60)}
 
 /* ---------- compare mode ---------- */
 .backbtn{font-family:var(--mono);font-size:11px}
@@ -453,10 +449,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
       </div>
       <div class="qpanel">
         <h3>What happens to the size</h3>
-        <p class="psub">Weight memory only (KV cache and activations come on top). Vertical marks show common GPU memory ceilings.</p>
+        <p class="psub">Weight memory only (KV cache and activations come on top).</p>
         <div class="szsel" id="szsel" role="group" aria-label="Choose model size"></div>
         <div class="szbars" id="szbars"></div>
-        <p class="fitnote" id="fitnote"></p>
       </div>
     </div>
   </section>
@@ -1724,28 +1719,17 @@ function fmtGB(v){ return v>=1024 ? (v/1024).toFixed(2)+' TB' : v>=10 ? v.toFixe
 function drawSizeBars(){
   const wrap=document.getElementById('szbars');
   const maxGB = gb(curSize.b, 4)*1.06;
-  const gpus=[{n:'RTX 4090 · 24',v:24},{n:'H100 · 80',v:80}];
   wrap.innerHTML='';
   FORMATS.forEach((f,i)=>{
     const v = gb(curSize.b, f.bytes);
     const row=document.createElement('div'); row.className='szrow';
-    const gpuLines = gpus.filter(g=>g.v<maxGB).map(g=>
-      `<span class="gpuline" style="left:${(g.v/maxGB*100).toFixed(1)}%"><i>${g.n}</i></span>`).join('');
     row.innerHTML=`<span class="fl">${f.name}</span>
-      <div class="szbarwrap">${gpuLines}<div class="szbar" style="width:0%;background:${PRAMP[Math.min(i+1,5)]};outline:${f.id===curFmt.id?`2px solid ${C.p60}`:'none'}"></div></div>
+      <div class="szbarwrap"><div class="szbar" style="width:0%;background:${PRAMP[Math.min(i+1,5)]};outline:${f.id===curFmt.id?`2px solid ${C.p60}`:'none'}"></div></div>
       <span class="szval">${fmtGB(v)}</span>`;
     wrap.appendChild(row);
     const bar=row.querySelector('.szbar');
     requestAnimationFrame(()=>requestAnimationFrame(()=>bar.style.width=(v/maxGB*100).toFixed(1)+'%'));
   });
-  const fit24 = FORMATS.filter(f=>gb(curSize.b,f.bytes)<=24).map(f=>f.name);
-  const fit80 = FORMATS.filter(f=>gb(curSize.b,f.bytes)<=80).map(f=>f.name);
-  const note = document.getElementById('fitnote');
-  note.innerHTML = fit24.length
-    ? `On a 24 GB consumer GPU, <b>${curSize.name}</b> fits in <b>${fit24.join(', ')}</b>.`
-    : fit80.length
-      ? `<b>${curSize.name}</b> needs a datacenter GPU: fits 80 GB in <b>${fit80.join(', ')}</b>; consumer cards need multi-GPU or offloading.`
-      : `<b>${curSize.name}</b> doesn\u2019t fit a single GPU in any format; this is multi-node territory (and why MoE inference is a systems problem).`;
 }
 
 /* ==================================================================
