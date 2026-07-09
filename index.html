@@ -486,10 +486,10 @@ const ARCHS = {
     d:4096, layers:32, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'128,256', vocabN:128256, headDim:128, ffnDim:14336,
     features:['context 8,192','RoPE θ 500k'], year:2024, blurb:'the modern dense recipe: RMSNorm, rotary positions, gated MLP, grouped KV' },
-  falcon:{ key:'falcon', name:'Falcon 7B', tag:'MQA · dense', params:'7B',
-    d:4544, layers:32, qHeads:71, kvHeads:1, attn:'MQA', ffn:'dense',
-    act:'GELU', gated:false, actName:'GELU', norm:'LayerNorm', pos:'RoPE', vocab:'65,024', vocabN:65024, headDim:64, ffnDim:18176,
-    parallelBlock:true, features:['context 2,048','parallel attention + MLP'], attnNotes:['parallel form: attention and the MLP read the same input side by side, then both add to the stream'], year:2023, blurb:'multi-query attention taken to the extreme: 71 query heads share a single K/V head' },
+  granite:{ key:'granite', name:'Granite 3.3 8B', tag:'GQA · dense', params:'8B',
+    d:4096, layers:40, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
+    act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'49,159', vocabN:49159, headDim:128, ffnDim:12800,
+    features:['context 128k','tied embeddings','RoPE θ 10M','muP-style multipliers'], year:2025, blurb:'IBM\'s open-weight dense model with muP scaling, designed for enterprise and multilingual use' },
   dsv3:{ key:'dsv3', name:'DeepSeek-V3', tag:'MLA · MoE', params:'671B total · 37B active',
     d:7168, layers:61, qHeads:128, kvHeads:0, attn:'MLA', ffn:'moe',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'decoupled RoPE', vocab:'129,280', vocabN:129280, headDim:128, ffnDim:2048,
@@ -497,7 +497,7 @@ const ARCHS = {
     features:['context 128k','sigmoid gate','grouped routing 8g · top-4','first 3 layers dense','MTP x1'],
     attnNotes:['decoupled RoPE: a 64-dim rotary slice rides beside the compressed latent to carry position'], year:2024, blurb:'sparse mixture-of-experts with compressed-latent attention: huge capacity, small forward pass' }
 };
-const ARCH_ORDER = ['gpt2','llama','falcon','dsv3'];
+const ARCH_ORDER = ['gpt2','llama','granite','dsv3'];
 let arch = ARCHS.gpt2;
 
 /* ============ tiny svg builders ============ */
