@@ -1616,7 +1616,7 @@ const FORMATS = [
   {id:'int8', name:'INT8', bytes:1, s:1, i:7, kind:'int', levels:255,
    desc:'8-bit integers with one scale per tensor or channel (this demo: symmetric absmax, 255 levels). The workhorse of CPU and edge inference.'},
   {id:'int4', name:'INT4', bytes:0.5, s:1, i:3, kind:'int', levels:15,
-   desc:'Just 16 levels. With smart grouping (GPTQ, AWQ, GGUF Q4) this runs 70B models on gaming GPUs.'}
+   desc:'Just 15 levels. With smart grouping (GPTQ, AWQ, GGUF Q4) this runs 70B models on gaming GPUs.'}
 ];
 let curFmt = FORMATS[1];
 
@@ -1934,9 +1934,9 @@ const ACT_ALIAS = {
   gelu_python:'GELU', openai_gelu:'GELU', quick_gelu:'GELU', gegelu:'GELU',
   silu:'SiLU', swish:'SiLU', relu:'ReLU', relu2:'ReLU²', relu_squared:'ReLU²',
   mish:'Mish', tanh:'Tanh', leaky_relu:'LeakyReLU', sigmoid:'Sigmoid', xielu:'xIELU',
-  swiglu:'SiLU', geglu:'GELU', reglu:'ReLU', glu:'SiLU'
+  swiglu:'SiLU', swigluoai:'SiLU', geglu:'GELU', reglu:'ReLU', glu:'SiLU'
 };
-const EXPLICIT_GATED = new Set(['swiglu','geglu','reglu','glu','gegelu']);
+const EXPLICIT_GATED = new Set(['swiglu','swigluoai','geglu','reglu','glu','gegelu']);
 const GATED_NAME = {'SiLU':'SwiGLU','GELU':'GeGLU','ReLU':'ReGLU','ReLU²':'ReGLU²','Mish':'MishGLU','xIELU':'xIELU-GLU'};
 
 /* ==================================================================
@@ -1965,7 +1965,7 @@ const FAM = {
   baichuan:{gated:true}, exaone:{gated:true}, exaone4:{gated:true, qkNorm:true}, stablelm:{gated:true},
   arctic:{gated:true}, smollm:{gated:true}, smollm3:{gated:true}, gpt_oss:{gated:true, sinks:true, sigmoidGate:false},
   seed_oss:{gated:true}, ernie4_5:{gated:true}, ernie4_5_moe:{gated:true}, hunyuan:{gated:true},
-  minimax:{gated:true, hybrid:true}, minimax_text:{gated:true, hybrid:true}, lfm2:{gated:true, hybrid:true},
+  minimax:{gated:true, hybrid:true}, minimax_text:{gated:true, hybrid:true}, minimax_m3_vl:{gated:true, sigmoidGate:true}, lfm2:{gated:true, hybrid:true},
   apertus:{gated:false}, bamba:{gated:true, hybrid:true}, plamo2:{gated:true, hybrid:true}
 };
 
@@ -2019,14 +2019,15 @@ function buildCustomArch(cfg, label){
   const moe = experts > 1;
   const topk = moe ? (pick(['num_experts_per_tok','ffn_config.moe_top_k','moe_top_k','top_k','moe_k']) ?? (assumed.push('top-k -> 2'), 2)) : 0;
   let shared = pick(['n_shared_experts','moe_num_shared_experts','num_shared_experts']) || 0;
-  const sharedDim = pick(['shared_expert_intermediate_size','moe_shared_expert_intermediate_size']);
+  const sharedDim = pick(['shared_expert_intermediate_size','moe_shared_expert_intermediate_size','shared_intermediate_size']);
   if(!shared && sharedDim){ shared = 1; assumed.push('shared experts -> 1 (shared_expert_intermediate_size present)'); }
-  const denseFfn = pick(['intermediate_size','n_inner','ffn_config.ffn_hidden_size','ffn_hidden_size','ffn_dim','d_ff'])
+  const denseFfn = pick(['dense_intermediate_size','intermediate_size','n_inner','ffn_config.ffn_hidden_size','ffn_hidden_size','ffn_dim','d_ff'])
     ?? (tc.expansion_ratio ? (read.push('expansion_ratio='+tc.expansion_ratio), tc.expansion_ratio*d)
         : (assumed.push(`ffn -> ${4*d} (4·d)`), 4*d));
-  const moeFfn = moe ? (pick(['moe_intermediate_size','ffn_config.moe_hidden_size']) ?? denseFfn) : denseFfn;
-  const firstDense = pick(['first_k_dense_replace']) || 0;
-  const sparseStep = pick(['decoder_sparse_step','moe_layer_freq']);
+  const moeFfn = moe ? (pick(['moe_intermediate_size','ffn_config.moe_hidden_size','intermediate_size']) ?? denseFfn) : denseFfn;
+  let firstDense = pick(['first_k_dense_replace']) || 0;
+  let sparseStep = pick(['decoder_sparse_step','moe_layer_freq']);
+  if(Array.isArray(sparseStep)){ const denseCount = sparseStep.filter(x=>!x).length; if(denseCount && !firstDense){ firstDense = denseCount; read.push('moe_layer_freq array -> '+denseCount+' dense layers'); } sparseStep = null; }
   const nGroup = pick(['n_group']), topkGroup = pick(['topk_group']);
   const moeScore = pick(['scoring_func','score_function']) || (fam && fam.sigmoidGate ? 'sigmoid' : 'softmax');
 
