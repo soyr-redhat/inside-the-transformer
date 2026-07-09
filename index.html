@@ -1945,28 +1945,55 @@ const GATED_NAME = {'SiLU':'SwiGLU','GELU':'GeGLU','ReLU':'ReGLU','ReLU²':'ReGL
    ================================================================== */
 const FAM = {
   gpt2:{gated:false, tied:true, pos:'learned'}, gptj:{gated:false, partial:true}, codegen:{gated:false, partial:true},
-  gpt_neox:{gated:false, parallel:true, partial:true}, opt:{gated:false, tied:true, pos:'learned'},
+  gpt_neo:{gated:false, tied:true, pos:'learned'}, gpt_neox:{gated:false, parallel:true, partial:true},
+  gpt_neox_japanese:{gated:false, tied:true}, opt:{gated:false, tied:true, pos:'learned'},
   bloom:{gated:false, alibi:true, tied:true}, mpt:{gated:false},
   falcon:{gated:false}, gpt_bigcode:{gated:false, tied:true, pos:'learned'}, starcoder2:{gated:false},
-  llama:{gated:true}, mistral:{gated:true}, mixtral:{gated:true}, mistral3:{gated:true},
+  xglm:{gated:false, tied:true, pos:'learned'}, persimmon:{gated:false, qkNorm:true, partial:true},
+  llama:{gated:true}, llama4:{gated:true, qkNorm:true, sigmoidGate:true}, llama4_text:{gated:true, qkNorm:true, sigmoidGate:true},
+  mistral:{gated:true}, mixtral:{gated:true}, mistral3:{gated:true}, mistral4:{gated:true},
+  ministral:{gated:true}, ministral3:{gated:true},
   qwen2:{gated:true}, qwen2_moe:{gated:true}, qwen3:{gated:true, qkNorm:true}, qwen3_moe:{gated:true, qkNorm:true},
   qwen3_next:{gated:true, qkNorm:true, hybrid:true},
+  qwen3_5:{gated:true, qkNorm:true, hybrid:true}, qwen3_5_text:{gated:true, qkNorm:true, hybrid:true},
+  qwen3_5_moe:{gated:true, qkNorm:true, hybrid:true}, qwen3_5_moe_text:{gated:true, qkNorm:true, hybrid:true},
   gemma:{gated:true, tied:true}, gemma2:{gated:true, tied:true, sandwich:true},
   gemma3:{gated:true, tied:true, sandwich:true, qkNorm:true}, gemma3_text:{gated:true, tied:true, sandwich:true, qkNorm:true},
+  gemma3n_text:{gated:true, tied:true, sandwich:true, qkNorm:true},
+  gemma4_text:{gated:true, tied:true, sandwich:true, qkNorm:true}, gemma4_assistant:{gated:true, tied:true, sandwich:true, qkNorm:true},
+  gemma4_unified_text:{gated:true, tied:true, sandwich:true, qkNorm:true}, gemma4_unified_assistant:{gated:true, tied:true, sandwich:true, qkNorm:true},
+  recurrent_gemma:{gated:true, tied:true, hybrid:true},
   phi:{gated:false, parallel:true, partial:true}, phi3:{gated:true}, phimoe:{gated:true},
-  deepseek_v2:{gated:true, sigmoidGate:false}, deepseek_v3:{gated:true, sigmoidGate:true}, kimi_k2:{gated:true, sigmoidGate:true},
+  deepseek_v2:{gated:true, sigmoidGate:false}, deepseek_v3:{gated:true, sigmoidGate:true},
+  deepseek_v32:{gated:true, sigmoidGate:true}, deepseek_v4:{gated:true, sinks:true},
+  kimi_k2:{gated:true, sigmoidGate:true}, kimi_k25:{gated:true, sigmoidGate:true},
   glm:{gated:false}, glm4:{gated:true}, glm4_moe:{gated:true, sigmoidGate:true},
-  granite:{gated:true}, granitemoe:{gated:true}, granitemoehybrid:{gated:true, hybrid:true},
+  glm4_moe_lite:{gated:true, sigmoidGate:true}, glm_moe_dsa:{gated:true, sigmoidGate:true},
+  granite:{gated:true}, granitemoe:{gated:true}, granitemoehybrid:{gated:true, hybrid:true}, granitemoeshared:{gated:true},
   cohere:{gated:true, tied:true, norm:'LayerNorm'}, cohere2:{gated:true, tied:true, norm:'LayerNorm'},
-  dbrx:{gated:true}, olmo:{gated:true}, olmo2:{gated:true, qkNorm:true, postNorm:true}, olmoe:{gated:true, qkNorm:true},
+  cohere2_moe:{gated:true, tied:true, norm:'LayerNorm'},
+  dbrx:{gated:true}, olmo:{gated:true}, hf_olmo:{gated:true}, olmo2:{gated:true, qkNorm:true, postNorm:true}, olmoe:{gated:true, qkNorm:true},
+  olmo3:{gated:true, qkNorm:true, postNorm:true}, olmo_hybrid:{gated:true, qkNorm:true, hybrid:true}, flex_olmo:{gated:true, qkNorm:true, postNorm:true},
   internlm2:{gated:true}, minicpm:{gated:true, tied:true}, minicpm3:{gated:true, tied:true},
   nemotron:{gated:false}, nemotron_h:{gated:false, hybrid:true},
-  jamba:{gated:true, hybrid:true}, zamba2:{gated:true, hybrid:true}, falcon_h1:{gated:true, hybrid:true},
-  baichuan:{gated:true}, exaone:{gated:true}, exaone4:{gated:true, qkNorm:true}, stablelm:{gated:true},
+  jamba:{gated:true, hybrid:true}, zamba:{gated:true, tied:true, hybrid:true}, zamba2:{gated:true, hybrid:true},
+  falcon_h1:{gated:true, hybrid:true}, falcon_mamba:{gated:false},
+  baichuan:{gated:true}, exaone:{gated:true}, exaone4:{gated:true, qkNorm:true}, exaone_moe:{gated:true, qkNorm:true, sigmoidGate:true},
+  stablelm:{gated:true}, diffllama:{gated:true}, jetmoe:{gated:true, tied:true},
   arctic:{gated:true}, smollm:{gated:true}, smollm3:{gated:true}, gpt_oss:{gated:true, sinks:true, sigmoidGate:false},
   seed_oss:{gated:true}, ernie4_5:{gated:true}, ernie4_5_moe:{gated:true}, hunyuan:{gated:true},
-  minimax:{gated:true, hybrid:true}, minimax_text:{gated:true, hybrid:true}, minimax_m3_vl:{gated:true, sigmoidGate:true}, lfm2:{gated:true, hybrid:true},
-  apertus:{gated:false}, bamba:{gated:true, hybrid:true}, plamo2:{gated:true, hybrid:true}
+  hunyuan_v1_dense:{gated:true}, hunyuan_v1_moe:{gated:true},
+  minimax:{gated:true, hybrid:true}, minimax_text:{gated:true, hybrid:true}, minimax_m2:{gated:true},
+  minimax_m3_vl:{gated:true, sigmoidGate:true}, minimax_m3_vl_text:{gated:true, sigmoidGate:true},
+  lfm2:{gated:true, hybrid:true}, lfm2_moe:{gated:true, hybrid:true, tied:true},
+  apertus:{gated:false}, bamba:{gated:true, hybrid:true}, plamo2:{gated:true, hybrid:true},
+  mamba:{gated:false}, mamba2:{gated:false}, rwkv:{gated:false}, xlstm:{gated:true},
+  helium:{gated:true}, doge:{gated:true, qkNorm:true}, bitnet:{gated:true},
+  solar_open:{gated:true, sigmoidGate:true}, hyperclovax:{gated:true},
+  arcee:{gated:false}, jais2:{gated:false}, nanochat:{gated:false},
+  afmoe:{gated:true}, dots1:{gated:true}, mellum:{gated:true}, laguna:{gated:true},
+  longcat_flash:{gated:true}, aria_text:{gated:true}, hrm_text:{gated:true},
+  cwm:{gated:true}, blt:{gated:true}, moshi:{gated:true}, zaya:{gated:true, tied:true, hybrid:true}
 };
 
 /* ==================================================================
@@ -1997,35 +2024,35 @@ function buildCustomArch(cfg, label){
   if(mt) read.push(`model_type=${mt}`);
 
   /* ---- core dimensions ---- */
-  const d = pick(['hidden_size','n_embd','d_model','model_dim','dim'],'d');
-  const q = pick(['num_attention_heads','n_head','n_heads','attn_config.n_heads','num_heads'],'q');
+  const d = pick(['hidden_size','n_embd','d_model','model_dim','dim','n_embed'],'d');
+  const q = pick(['num_attention_heads','n_head','n_heads','attn_config.n_heads','num_heads','attention_heads'],'q');
   if(!d || !q) throw new Error('no hidden size / attention heads found, is this a model config.json?');
-  const layers = pick(['num_hidden_layers','n_layer','n_layers','num_layers']) ?? (assumed.push('layers -> 12 (missing)'), 12);
+  const layers = pick(['num_hidden_layers','n_layer','n_layers','num_layers','num_transformer_layers']) ?? (assumed.push('layers -> 12 (missing)'), 12);
   const isMLA = tc.kv_lora_rank != null;
-  let kv = pick(['num_key_value_heads','attn_config.kv_n_heads','n_head_kv','num_kv_heads']);
+  let kv = pick(['num_key_value_heads','attn_config.kv_n_heads','n_head_kv','num_kv_heads','multi_query_group_num','num_query_groups']);
   if(kv==null){
     if(tc.multi_query===true){ kv=1; read.push('multi_query=true'); }
     else if(isMLA){ kv=0; } // latent attention, per-head K/V doesn't apply
     else { kv=q; assumed.push('kv heads -> '+q+' (none declared ⇒ MHA)'); }
   }
   const qkRope = pick(['qk_rope_head_dim']), qkNope = pick(['qk_nope_head_dim']);
-  const headDim = pick(['head_dim','attention_head_dim','v_head_dim'])
+  const headDim = pick(['head_dim','attention_head_dim','v_head_dim','head_size','kv_channels'])
     ?? (qkNope? qkNope+(qkRope||0) : (assumed.push(`head_dim -> ${Math.round(d/q)} (d/q)`), Math.round(d/q)));
   const vocabN = pick(['vocab_size','padded_vocab_size']) ?? (assumed.push('vocab -> 32,000 (missing)'), 32000);
-  const ctx = pick(['max_position_embeddings','n_positions','n_ctx','max_seq_len','seq_length','model_max_length']);
+  const ctx = pick(['max_position_embeddings','n_positions','n_ctx','max_seq_len','seq_length','model_max_length','max_context_length','max_sequence_length']);
 
   /* ---- MoE layout ---- */
   const experts = pick(['n_routed_experts','num_local_experts','num_experts','ffn_config.moe_num_experts','moe_num_experts']) || 0;
   const moe = experts > 1;
-  const topk = moe ? (pick(['num_experts_per_tok','ffn_config.moe_top_k','moe_top_k','top_k','moe_k']) ?? (assumed.push('top-k -> 2'), 2)) : 0;
+  const topk = moe ? (pick(['num_experts_per_tok','ffn_config.moe_top_k','moe_top_k','top_k','moe_k','top_k_experts','moe_topk']) ?? (assumed.push('top-k -> 2'), 2)) : 0;
   let shared = pick(['n_shared_experts','moe_num_shared_experts','num_shared_experts']) || 0;
   const sharedDim = pick(['shared_expert_intermediate_size','moe_shared_expert_intermediate_size','shared_intermediate_size']);
   if(!shared && sharedDim){ shared = 1; assumed.push('shared experts -> 1 (shared_expert_intermediate_size present)'); }
-  const denseFfn = pick(['dense_intermediate_size','intermediate_size','n_inner','ffn_config.ffn_hidden_size','ffn_hidden_size','ffn_dim','d_ff'])
+  const denseFfn = pick(['dense_intermediate_size','intermediate_size_mlp','intermediate_size','n_inner','mlp_hidden_size','ffn_config.ffn_hidden_size','ffn_hidden_size','ffn_dim','d_ff'])
     ?? (tc.expansion_ratio ? (read.push('expansion_ratio='+tc.expansion_ratio), tc.expansion_ratio*d)
         : (assumed.push(`ffn -> ${4*d} (4·d)`), 4*d));
   const moeFfn = moe ? (pick(['moe_intermediate_size','ffn_config.moe_hidden_size','intermediate_size']) ?? denseFfn) : denseFfn;
-  let firstDense = pick(['first_k_dense_replace']) || 0;
+  let firstDense = pick(['first_k_dense_replace','num_dense_layers']) || 0;
   let sparseStep = pick(['decoder_sparse_step','moe_layer_freq']);
   if(Array.isArray(sparseStep)){ const denseCount = sparseStep.filter(x=>!x).length; if(denseCount && !firstDense){ firstDense = denseCount; read.push('moe_layer_freq array -> '+denseCount+' dense layers'); } sparseStep = null; }
   const nGroup = pick(['n_group']), topkGroup = pick(['topk_group']);
@@ -2037,8 +2064,8 @@ function buildCustomArch(cfg, label){
   const attn = mla ? 'MLA' : (kv>=q ? 'MHA' : kv===1 ? 'MQA' : 'GQA');
 
   /* ---- positions ---- */
-  const theta = pick(['rope_theta','attn_config.rope_theta','rotary_emb_base']);
-  const partialPct = pick(['partial_rotary_factor','rotary_pct']);
+  const theta = pick(['rope_theta','attn_config.rope_theta','rotary_emb_base','rope_freq_constant']);
+  const partialPct = pick(['partial_rotary_factor','rotary_pct','rope_percentage','rope_percent']);
   const alibi = tc.alibi === true || (tc.attn_config && tc.attn_config.alibi === true) || (fam && fam.alibi);
   let pos, posFeat = [];
   if(alibi){ pos = 'ALiBi'; }
@@ -2051,7 +2078,7 @@ function buildCustomArch(cfg, label){
   else { pos = 'RoPE'; assumed.push('positions -> RoPE (nothing declared; modern default)'); }
 
   /* ---- activation + gatedness ---- */
-  const rawAct = pick(['hidden_act','activation_function','hidden_activation','ffn_config.ffn_act_fn.name','activation']) || '';
+  const rawAct = pick(['hidden_act','activation_function','hidden_activation','ffn_config.ffn_act_fn.name','activation','activation_fn_name','activation_type']) || '';
   const actKey = String(rawAct).toLowerCase();
   const act = ACT_ALIAS[actKey] || (actKey ? (assumed.push(`activation "${rawAct}" unrecognized -> drawn as SiLU`), 'SiLU') : (assumed.push('activation -> GELU (missing)'), 'GELU'));
   let gated;
