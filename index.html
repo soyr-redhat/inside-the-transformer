@@ -245,6 +245,34 @@ svg .pulse{animation:softpulse 1.6s var(--ease) infinite}
 .fitnote{font-size:11.5px;color:var(--g60);margin-top:14px;line-height:1.6}
 .fitnote b{color:var(--p60)}
 
+/* ---------- compare mode ---------- */
+.backbtn{font-family:var(--mono);font-size:11px}
+#explorepage.comparing .crumbrow, #explorepage.comparing #stage, #explorepage.comparing .stagefoot,
+#explorepage.comparing .descwrap, #explorepage.comparing .promptwrap, #explorepage.comparing #resultwrap{display:none}
+.cmpsel{display:flex;flex-direction:column;gap:8px;padding:14px 0 16px;position:relative}
+.cmprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cmplbl{font-family:var(--mono);font-size:11px;color:var(--g50);width:36px;flex:none}
+.cmppills{display:flex;gap:6px;flex-wrap:wrap}
+.cmppills button{padding:5px 12px;border:1px solid var(--g20);border-radius:14px;font-size:12px;font-weight:500;transition:all .2s var(--ease);background:var(--white)}
+.cmppills button:hover{border-color:var(--p40)}
+.cmppills button[aria-pressed="true"]{background:var(--p50);border-color:var(--p50);color:var(--white);font-weight:600}
+#cmpclose{position:absolute;right:0;top:14px;padding:5px 14px;border:1px solid var(--g20);border-radius:14px;font-size:12px;font-weight:600;color:var(--g60);transition:all .2s var(--ease)}
+#cmpclose:hover{border-color:var(--p50);color:var(--p60)}
+.cmpgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:880px){.cmpgrid{grid-template-columns:1fr}}
+.cmppane h3{font-size:14px;font-weight:700;margin:0 0 8px}
+.cmpsvg{border:1px solid var(--g20);border-radius:8px;overflow:hidden}
+.cmpsvg svg{width:100%;height:auto;display:block;pointer-events:none}
+.cmpopen{margin-top:8px;padding:6px 14px;border:1px solid var(--p50);color:var(--p60);border-radius:6px;font-size:12px;font-weight:600;transition:all .2s var(--ease)}
+.cmpopen:hover{background:var(--p10)}
+#cmptable{margin-top:26px;overflow-x:auto}
+#cmptable table{width:100%;border-collapse:collapse;font-size:13px}
+#cmptable th{text-align:left;padding:10px 14px;font-size:11.5px;font-weight:600;color:var(--white);background:var(--g95)}
+#cmptable td{padding:10px 14px;border-bottom:1px solid var(--g10);vertical-align:top}
+#cmptable td:first-child{font-weight:600;color:var(--g70);font-size:12px;white-space:nowrap}
+#cmptable td.diff{background:var(--p10);color:var(--p70);font-weight:600}
+#cmptable .cmpcap{font-size:11px;color:var(--g50);padding:8px 2px}
+
 /* ---------- guided walkthrough ---------- */
 #stepbtn{padding:10px 16px;border:1px solid var(--p50);color:var(--p60);border-radius:6px;font-weight:600;font-size:13px;flex:none;transition:all .2s var(--ease);background:var(--white)}
 #stepbtn:hover{background:var(--p10)}
@@ -298,7 +326,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
 
 <header>
   <h1>Inside the transformer
-    <small>an interactive atlas of LLM architectures — click any outlined block to zoom in</small>
+    <small>an interactive atlas of LLM architectures. Click any outlined block to zoom in</small>
   </h1>
   <div class="viewswitch" role="tablist" aria-label="Page view">
     <button id="vw-explore" aria-pressed="true">Explore architectures</button>
@@ -313,7 +341,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
 <div id="cfgpanel" hidden>
   <div class="inner">
     <h3>Build a model from its config.json</h3>
-    <p class="csub">Paste a Hugging Face link (repo or config.json URL) — dimensions, attention variant, MoE layout and quantization are read straight from the config.</p>
+    <p class="csub">Paste a Hugging Face link (repo or config.json URL). Dimensions, attention variant, MoE layout and quantization are read straight from the config.</p>
     <div class="cin">
       <input id="cfgurl" type="text" placeholder="https://huggingface.co/org/model  or  …/resolve/main/config.json" aria-label="config.json URL">
       <button class="cbtn" id="cfgload">Load</button>
@@ -328,9 +356,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
 
 <main id="explorepage">
   <div class="crumbrow">
-    <button class="backbtn" id="backbtn" aria-label="Zoom out one level" disabled>←</button>
+    <button class="backbtn" id="backbtn" aria-label="Zoom out one level" disabled>&lt;-</button>
     <nav class="crumbs" id="crumbs" aria-label="Zoom depth"></nav>
-    <span class="hint">click to zoom · <kbd>esc</kbd> zooms out · <kbd>1</kbd>–<kbd>4</kbd> switch model</span>
+    <span class="hint">click to zoom · <kbd>esc</kbd> zooms out · <kbd>c</kbd> compares</span>
   </div>
 
   <div id="stage" aria-live="polite">
@@ -342,8 +370,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
       </div>
       <p id="ttext"></p>
       <div class="tnav">
-        <button id="tprev">← back</button>
-        <button id="tnext" class="tnext">next →</button>
+        <button id="tprev">&lt;- back</button>
+        <button id="tnext" class="tnext">next -&gt;</button>
       </div>
     </div>
   </div>
@@ -355,6 +383,19 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
       <span class="keyitem"><span class="swatch" style="background:var(--g10);border:1px solid var(--g30)"></span>frozen weights</span>
     </div>
     <span id="depthlabel"></span>
+  </div>
+
+  <div id="comparewrap" hidden>
+    <div class="cmpsel">
+      <div class="cmprow"><span class="cmplbl">left</span><div class="cmppills" id="cmpA"></div></div>
+      <div class="cmprow"><span class="cmplbl">right</span><div class="cmppills" id="cmpB"></div></div>
+      <button id="cmpclose">exit compare</button>
+    </div>
+    <div class="cmpgrid">
+      <div class="cmppane"><h3 id="cmpAtitle"></h3><div class="cmpsvg" id="cmpAsvg"></div><button class="cmpopen" id="cmpAopen">explore this model -&gt;</button></div>
+      <div class="cmppane"><h3 id="cmpBtitle"></h3><div class="cmpsvg" id="cmpBsvg"></div><button class="cmpopen" id="cmpBopen">explore this model -&gt;</button></div>
+    </div>
+    <div id="cmptable"></div>
   </div>
 
   <div class="descwrap" data-depth="plain" id="descwrap">
@@ -371,11 +412,11 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
 
   <div class="promptwrap">
     <h3>Run a prompt through the model</h3>
-    <p class="note">Run all tokens at once — or click a token chip (or “Step through”) to follow a single token through every stage of the model, in depth.</p>
+    <p class="note">Run all tokens at once, or click a token chip (or Step through) to follow a single token through every stage of the model, in depth.</p>
     <div class="promptrow">
       <input id="promptin" type="text" value="the red hat sits on the" maxlength="60" aria-label="Sample prompt">
-      <button id="runbtn">Run tokens →</button>
-      <button id="stepbtn">Step through ↓</button>
+      <button id="runbtn">Run tokens -></button>
+      <button id="stepbtn">Step through</button>
     </div>
     <div class="tokrow" id="tokrow" aria-label="Tokenized prompt"></div>
     <div id="resultwrap">
@@ -389,12 +430,12 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
 <main id="quantpage">
   <section class="qsection" style="margin-top:18px">
     <h2>Number formats</h2>
-    <p class="sub">Every weight in a model is just a number stored in bits. Fewer bits means a smaller, faster model — and a coarser grid of representable values. Select a format to see its effect below.</p>
+    <p class="sub">Every weight in a model is just a number stored in bits. Fewer bits means a smaller, faster model, and a coarser grid of representable values. Select a format to see its effect below.</p>
     <div class="fmtgrid" id="fmtgrid"></div>
     <div class="bitlegend">
       <span><span class="swatch" style="background:var(--g95)"></span>sign (S)</span>
-      <span><span class="swatch" style="background:var(--p50)"></span>exponent (E) — dynamic range</span>
-      <span><span class="swatch" style="background:var(--p30)"></span>mantissa (M) — precision</span>
+      <span><span class="swatch" style="background:var(--p50)"></span>exponent (E): dynamic range</span>
+      <span><span class="swatch" style="background:var(--p30)"></span>mantissa (M): precision</span>
       <span><span class="swatch" style="background:var(--p40)"></span>integer magnitude (I)</span>
     </div>
   </section>
@@ -406,8 +447,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
         <p class="psub">64 real weights from one layer, snapped to the selected format's grid. Gray dots are the originals; purple dots are what actually gets stored.</p>
         <div id="quantviz"></div>
         <div class="qstats">
-          <div class="qstat"><div class="l">Distinct levels</div><div class="v" id="qlevels">—</div><div class="c">values the format can represent here</div></div>
-          <div class="qstat"><div class="l">Rounding error</div><div class="v" id="qerr">—</div><div class="c">RMS error vs. original weights</div></div>
+          <div class="qstat"><div class="l">Distinct levels</div><div class="v" id="qlevels">-</div><div class="c">values the format can represent here</div></div>
+          <div class="qstat"><div class="l">Rounding error</div><div class="v" id="qerr">-</div><div class="c">RMS error vs. original weights</div></div>
         </div>
       </div>
       <div class="qpanel">
@@ -440,7 +481,7 @@ const ARCHS = {
   gpt2:{ key:'gpt2', name:'GPT-2 small', tag:'MHA · dense', params:'124M',
     d:768, layers:12, qHeads:12, kvHeads:12, attn:'MHA', ffn:'dense',
     act:'GELU', gated:false, actName:'GELU', norm:'LayerNorm', pos:'learned positions', vocab:'50,257', vocabN:50257, headDim:64, ffnDim:3072,
-    features:['context 1,024','tied embeddings'], year:2019, blurb:'the classic decoder-only recipe — every later model is a remix of this' },
+    features:['context 1,024','tied embeddings'], year:2019, blurb:'the classic decoder-only recipe; every later model is a remix of this' },
   llama:{ key:'llama', name:'Llama 3 8B', tag:'GQA · dense', params:'8B',
     d:4096, layers:32, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'128,256', vocabN:128256, headDim:128, ffnDim:14336,
@@ -448,13 +489,13 @@ const ARCHS = {
   falcon:{ key:'falcon', name:'Falcon 7B', tag:'MQA · dense', params:'7B',
     d:4544, layers:32, qHeads:71, kvHeads:1, attn:'MQA', ffn:'dense',
     act:'GELU', gated:false, actName:'GELU', norm:'LayerNorm', pos:'RoPE', vocab:'65,024', vocabN:65024, headDim:64, ffnDim:18176,
-    features:['context 2,048','parallel attention + MLP'], attnNotes:['parallel form: attention and the MLP read the same input side by side, then both add to the stream'], year:2023, blurb:'multi-query attention taken to the extreme: 71 query heads share a single K/V head' },
+    parallelBlock:true, features:['context 2,048','parallel attention + MLP'], attnNotes:['parallel form: attention and the MLP read the same input side by side, then both add to the stream'], year:2023, blurb:'multi-query attention taken to the extreme: 71 query heads share a single K/V head' },
   dsv3:{ key:'dsv3', name:'DeepSeek-V3', tag:'MLA · MoE', params:'671B total · 37B active',
     d:7168, layers:61, qHeads:128, kvHeads:0, attn:'MLA', ffn:'moe',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'decoupled RoPE', vocab:'129,280', vocabN:129280, headDim:128, ffnDim:2048,
-    experts:256, topk:8, shared:1, latent:512, moeScore:'sigmoid',
-    features:['context 128k','sigmoid gate','grouped routing 8g · top-4','first 3 layers dense','MTP ×1'],
-    attnNotes:['decoupled RoPE: a 64-dim rotary slice rides beside the compressed latent to carry position'], year:2024, blurb:'sparse mixture-of-experts with compressed-latent attention — huge model, small forward pass' }
+    experts:256, topk:8, shared:1, latent:512, ropeDim:64, moeScore:'sigmoid',
+    features:['context 128k','sigmoid gate','grouped routing 8g · top-4','first 3 layers dense','MTP x1'],
+    attnNotes:['decoupled RoPE: a 64-dim rotary slice rides beside the compressed latent to carry position'], year:2024, blurb:'sparse mixture-of-experts with compressed-latent attention: huge capacity, small forward pass' }
 };
 const ARCH_ORDER = ['gpt2','llama','falcon','dsv3'];
 let arch = ARCHS.gpt2;
@@ -553,7 +594,7 @@ function lockNav(){
 function dive(sceneId, ctx, originEl, force){
   if(!SCENES[sceneId]) return;
   if(typeof tour!=='undefined' && tour.on && !force) return;
-  /* dives are always allowed — purge makes them overlap-safe; only zoom-outs queue */
+  /* dives are always allowed, purge makes them overlap-safe; only zoom-outs queue */
   pendingOut=0; purgeLeaving(); lockNav();
   stopFlow();
   const org = originOf(originEl);
@@ -637,15 +678,19 @@ function updateChrome(meta){
   // description
   desctitle.textContent = meta.title;
   descplain.textContent = meta.plain;
-  descmath.textContent = meta.math || 'No extra math at this level — dive deeper.';
+  descmath.textContent = meta.math || 'No extra math at this level. Dive deeper.';
   [desctitle,descplain,descmath].forEach(el=>{ el.classList.remove('desc-fade'); void el.offsetWidth; el.classList.add('desc-fade'); });
 }
 
 backbtn.addEventListener('click', zoomOut);
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ if(typeof tour!=='undefined' && tour.on){ endTour(); return; } zoomOut(); }
-  if(e.target.tagName==='INPUT') return;
-  if(['1','2','3','4'].includes(e.key)) setArch(ARCH_ORDER[+e.key-1]);
+  if(e.key==='Escape'){
+    if(typeof tour!=='undefined' && tour.on){ endTour(); return; }
+    if(typeof cmp!=='undefined' && cmp.on){ exitCompare(); return; }
+    zoomOut();
+  }
+  if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+  if(e.key==='c' && typeof cmp!=='undefined'){ cmp.on ? exitCompare() : enterCompare(); }
   if(e.key==='/'){ e.preventDefault(); document.getElementById('promptin').focus(); }
 });
 
@@ -673,6 +718,7 @@ ARCH_ORDER.forEach(k=>{
 function setArch(k){
   if(!ARCHS[k] || k===arch.key) return;
   if(typeof tour!=='undefined' && tour.on) endTour();
+  if(typeof cmp!=='undefined' && cmp.on) exitCompare();
   arch = ARCHS[k];
   document.querySelectorAll('.mpill').forEach(p=>p.setAttribute('aria-pressed', p.dataset.k===k));
   hideResult();
@@ -680,7 +726,7 @@ function setArch(k){
 }
 
 /* ==================================================================
-   SCENES — each returns {svg, title, crumb, plain, math}
+   SCENES, each returns {svg, title, crumb, plain, math}
    ================================================================== */
 
 /* ---------- head-sharing panel used by all attention scenes ---------- */
@@ -699,7 +745,7 @@ function headPanel(x, y, opts){
     const lw = qn*(sq+gap)-gap;
     s += rect(x, y+92, lw, 26, '', 5, `fill="${C.p30}" stroke="${C.p50}" stroke-width="1.25"`);
     s += T(x+lw/2, y+109, 't-lbl', `compressed latent  c  (${arch.latent} dims)`, 'middle');
-    s += T(x+lw+6, y+109, 't-cap', '← cached');
+    s += T(x+lw+6, y+109, 't-cap', '<- cached');
     s += arrow(x+lw/2-60, y+118, x+lw/2-60, y+152, 'wire-p');
     s += arrow(x+lw/2+60, y+118, x+lw/2+60, y+152, 'wire-p');
     s += rect(x+lw/2-110, y+152, 100, 26, '', 4, `fill="${C.p10}" stroke="${C.p30}"`);
@@ -798,7 +844,7 @@ model(){
   G.norm = {x0:652, x1:734};
 
   // lm head
-  s += zbox(766, lineY-42, 96, 84, 'LM head', `${a.d} → ${a.vocab}`, 'lmhead');
+  s += zbox(766, lineY-42, 96, 84, 'LM head', `${a.d} -> ${a.vocab}`, 'lmhead');
   s += arrow(862, lineY, 888, lineY);
   G.head = {x0:766, x1:862};
 
@@ -825,9 +871,9 @@ model(){
 
   window.MODEL_GEOM = G;
   const plainMoe = `Only a fraction of the network runs for any given token: each block routes it to ${a.topk} of ${a.experts} specialist FFNs${a.shared?' (plus '+a.shared+' shared)':''}. That is how it can store far more parameters than it spends per token (${a.params}).`;
-  const plainDense = `Every parameter participates in every token — that is what “dense” means.`;
+  const plainDense = `Every parameter participates in every token, that is what “dense” means.`;
   return { svg:s,
-    title:`${a.name} — the whole model`, crumb:a.name,
+    title:`${a.name}, the whole model`, crumb:a.name,
     plain:`A decoder-only transformer: text becomes token ids, ids become ${a.d}-dimensional vectors, and ${a.layers} identical blocks take turns refining them. The LM head turns the final vector back into a probability over ${a.vocab} tokens. ${moe?plainMoe:plainDense} Click the embedding, a block, or the head to zoom in.`,
     math:`d_model = ${a.d}    layers = ${a.layers}    vocab = ${a.vocab}\nforward:  x₀ = Embed(ids)\n          xₗ = Blockₗ(xₗ₋₁)   for ℓ = 1…${a.layers}\n          p  = softmax(W_lm · ${a.norm}(x_L))`
   };
@@ -840,10 +886,36 @@ block(){
   s += T(36, 44, 't-title', 'One transformer block');
   s += T(36, 64, 't-cap', `repeated × ${a.layers}, identical shape, different learned weights`);
 
+  if(a.parallelBlock){
+    const mainY = 372;
+    s += line(40, mainY, 950, mainY, 'wire');
+    s += `<polygon points="950,372 942,368 942,376" fill="${C.g40}"/>`;
+    s += T(46, mainY+22, 't-cap', `residual stream, the d=${a.d} vector that flows through untouched`);
+    s += T(30, mainY-10, 't-mono', 'x');
+    s += line(96, mainY, 96, 238, 'wire');
+    s += arrow(96, 238, 136, 238, 'wire');
+    s += zbox(138, 206, 104, 64, a.norm, 'one norm, two readers', 'norm', 'boxw', 'pre-attn');
+    s += line(242, 238, 282, 238, 'wire');
+    s += line(282, 238, 282, 142, 'wire'); s += arrow(282, 142, 314, 142);
+    s += line(282, 238, 282, 278, 'wire'); s += arrow(282, 278, 314, 278);
+    s += zbox(316, 96, 212, 92, `${a.attn} attention`, 'tokens talk to each other', 'attn');
+    if(moe) s += zbox(316, 232, 212, 92, 'MoE layer', `top-${a.topk} of ${a.experts} experts`, 'moe');
+    else    s += zbox(316, 232, 212, 92, `MLP (${a.actName})`, `${a.d} -> ${a.ffnDim} -> ${a.d}`, 'ffn');
+    s += line(528, 142, 760, 142, 'wire');
+    s += line(528, 278, 760, 278, 'wire');
+    s += arrow(760, 142, 760, mainY-12, 'wire');
+    s += addNode(760, mainY, 'add');
+    s += T(316, 344, 't-cap', 'both outputs land on the stream at the same junction');
+    return { svg:s,
+      title:'Inside a block (parallel form)', crumb:'block',
+      plain:`This model uses the parallel block: a single ${a.norm} feeds both sublayers at once. Attention and the ${moe?'MoE layer':'MLP'} read the same normalized input side by side, and their outputs are added onto the residual stream together. One fewer norm per block and better kernel overlap, with quality that held up at scale.`,
+      math:`y = x + ${a.attn}(${a.norm}(x)) + ${moe?'MoE':'MLP'}(${a.norm}(x))`
+    };
+  }
   const mainY = 372, laneY = 160;
   s += line(40, mainY, 950, mainY, 'wire');
   s += `<polygon points="950,372 942,368 942,376" fill="${C.g40}"/>`;
-  s += T(46, mainY+22, 't-cap', `residual stream — the d=${a.d} vector that flows through untouched`);
+  s += T(46, mainY+22, 't-cap', `residual stream, the d=${a.d} vector that flows through untouched`);
   s += T(30, mainY-10, 't-mono', 'x');
 
   // sublayer 1: norm -> attention -> add
@@ -864,7 +936,7 @@ block(){
   if(moe){
     s += zbox(728, laneY-14, 176, 92, 'MoE layer', `top-${a.topk} of ${a.experts} experts`, 'moe');
   } else {
-    s += zbox(728, laneY-14, 176, 92, `MLP (${a.actName})`, `${a.d} → ${a.ffnDim} → ${a.d}`, 'ffn');
+    s += zbox(728, laneY-14, 176, 92, `MLP (${a.actName})`, `${a.d} -> ${a.ffnDim} -> ${a.d}`, 'ffn');
   }
   s += line(904, laneY+32, 928, laneY+32, 'wire');
   s += arrow(928, laneY+32, 928, mainY-12, 'wire');
@@ -872,7 +944,7 @@ block(){
 
   return { svg:s,
     title:'Inside a block', crumb:'block',
-    plain:`Two sublayers, one job each. Attention is the only place tokens exchange information — it mixes across positions. The ${moe?'MoE layer':'MLP'} then transforms each position independently. Both read a normalized copy of the stream and add their result back, so the original signal is never overwritten.`,
+    plain:`Two sublayers, one job each. Attention is the only place tokens exchange information: it mixes across positions. The ${moe?'MoE layer':'MLP'} then transforms each position independently. Both read a normalized copy of the stream and add their result back, so the original signal is never overwritten.`,
     math:`pre-norm residual form:\n  h = x + ${a.attn}( ${a.norm}(x) )\n  y = h + ${moe?'MoE':'MLP'}( ${a.norm}(h) )`
   };
 },
@@ -881,23 +953,23 @@ block(){
 embed(){
   const a = arch, learned = a.pos.startsWith('learned');
   let s = '';
-  s += T(36, 44, 't-title', 'Embedding — from token id to vector');
+  s += T(36, 44, 't-title', 'Embedding, from token id to vector');
   // token chip
   s += rect(60, 200, 74, 30, '', 5, `fill="${C.p50}"`);
   s += T(97, 219, 'tokchip-t', '"hat"', 'middle');
-  s += T(97, 250, 't-mono', 'id 5269', 'middle');
+  s += T(97, 250, 't-mono', 'e.g. id 5269', 'middle');
   s += arrow(134, 215, 190, 215);
   // E matrix (zoomable to matmul)
   let mg = matglyph(196, 120, 210, 190, 10, 8, C.g20, 'none', [[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[6,7]]);
   mg += rect(196, 120, 210, 190, 'hitrect', 4, `fill="none" stroke="${C.g60}" stroke-width="1.25"`);
   mg += `<text x="${196+210-7}" y="135" class="zoomglyph" text-anchor="end">+</text>`;
   s += `<g class="clk" data-zoom="matmul" data-ctx="lookup" tabindex="0" role="button" aria-label="embedding matrix, zoom in">${mg}</g>`;
-  s += T(301, 328, 't-sub', `E — ${a.vocab} rows × ${a.d} dims`, 'middle');
+  s += T(301, 328, 't-sub', `E, ${a.vocab} rows × ${a.d} dims`, 'middle');
   s += T(301, 105, 't-cap', 'pick row 5269', 'middle');
   s += arrow(406, 215, 460, 215);
   // output vector
   s += matglyph(464, 202, 130, 26, 1, 10, C.p40);
-  s += T(529, 250, 't-sub', `x — 1 × ${a.d}`, 'middle');
+  s += T(529, 250, 't-sub', `x, 1 × ${a.d}`, 'middle');
   if(learned){
     s += T(704, 96, 't-sub', 'learned position row P[pos]', 'middle');
     s += matglyph(639, 108, 130, 26, 1, 10, C.p20);
@@ -905,15 +977,15 @@ embed(){
     s += arrow(600, 215, 687, 215);
     s += addNode(704, 215, null);
     s += arrow(715, 215, 768, 215);
-    s += T(776, 219, 't-mono', '→ into block 1');
+    s += T(776, 219, 't-mono', '-> into block 1');
   } else {
-    s += T(464, 300, 't-cap', `no position vector added here — ${a.name} rotates Q and K inside attention instead (${a.pos})`);
+    s += T(464, 300, 't-cap', `no position vector added here, ${a.name} rotates Q and K inside attention instead (${a.pos})`);
     s += arrow(600, 215, 660, 215);
-    s += T(668, 219, 't-mono', '→ into block 1');
+    s += T(668, 219, 't-mono', '-> into block 1');
   }
   return { svg:s,
     title:'Embedding', crumb:'embedding',
-    plain:`The embedding is a giant lookup table with one learned row per vocabulary entry. A token id just selects its row — no arithmetic yet. ${learned? 'GPT-2 also keeps a second table of position vectors and adds row [pos], so “hat” at position 1 and position 7 enter the network as different vectors.' : 'Position information is injected later: RoPE rotates the query and key vectors inside every attention layer, so the embedding itself is position-free.'}`,
+    plain:`The embedding is a giant lookup table with one learned row per vocabulary entry. A token id just selects its row, no arithmetic yet. ${learned? 'GPT-2 also keeps a second table of position vectors and adds row [pos], so “hat” at position 1 and position 7 enter the network as different vectors.' : 'Position information is injected later: RoPE rotates the query and key vectors inside every attention layer, so the embedding itself is position-free.'}`,
     math:`x = E[id]${learned?' + P[pos]':''}        E ∈ ℝ^(${a.vocab} × ${a.d})\nequivalently: x = onehot(id) · E   (a very sparse matmul)`
   };
 },
@@ -922,9 +994,9 @@ embed(){
 lmhead(){
   const a = arch;
   let s = '';
-  s += T(36, 44, 't-title', 'LM head — from vector back to words');
+  s += T(36, 44, 't-title', 'LM head, from vector back to words');
   s += matglyph(60, 202, 130, 26, 1, 10, C.p40);
-  s += T(125, 250, 't-sub', `final vector — 1 × ${a.d}`, 'middle');
+  s += T(125, 250, 't-sub', `final vector, 1 × ${a.d}`, 'middle');
   s += arrow(190, 215, 240, 215);
   s += zbox(244, 168, 130, 94, 'W_lm', `${a.d} × ${a.vocab}`, 'matmul', 'boxw', 'lmhead');
   s += arrow(374, 215, 424, 215);
@@ -932,17 +1004,17 @@ lmhead(){
   const lh=[34,12,52,20,8,44,16,26,10,38];
   lh.forEach((h,i)=> s += `<rect x="${428+i*15}" y="${232-h}" width="10" height="${h}" rx="1.5" fill="${C.g40}"/>`);
   s += line(426, 233, 428+10*15, 233, 'wire');
-  s += T(500, 258, 't-sub', `logits — one raw score per token (${a.vocab} of them)`, 'middle');
+  s += T(500, 258, 't-sub', `logits, one raw score per token (${a.vocab} of them)`, 'middle');
   s += arrow(582, 215, 630, 215);
   s += zbox(634, 176, 118, 78, 'softmax', 'with temperature', 'softmax', 'boxw', 'lmhead');
   s += arrow(752, 215, 798, 215);
   const ph=[46,26,14,8,5];
   ph.forEach((h,i)=> s += `<rect x="${802+i*17}" y="${232-h}" width="12" height="${h}" rx="1.5" fill="${PRAMP[4-i]}"/>`);
-  s += T(842, 258, 't-sub', 'probabilities → sample one', 'middle');
-  const tie = a.key==='gpt2' ? ' GPT-2 reuses the embedding matrix here (tied weights) — the same table maps words to vectors and vectors back to words.' : '';
+  s += T(842, 258, 't-sub', 'probabilities -> sample one', 'middle');
+  const tie = a.key==='gpt2' ? ' GPT-2 reuses the embedding matrix here (tied weights): the same table maps words to vectors and vectors back to words.' : '';
   return { svg:s,
     title:'LM head', crumb:'LM head',
-    plain:`The mirror image of the embedding: one matrix multiplication scores every token in the vocabulary at once, and a softmax turns those raw scores into a probability distribution. Decoding then samples from it — greedy, top-p, temperature, all of that happens here.${tie}`,
+    plain:`The mirror image of the embedding: one matrix multiplication scores every token in the vocabulary at once, and a softmax turns those raw scores into a probability distribution. Decoding then samples from it; greedy, top-p, and temperature all live here.${tie}`,
     math:`logits = x · W_lm        W_lm ∈ ℝ^(${a.d} × ${a.vocab})\np = softmax(logits / T)   T = temperature\nnext id ~ p`
   };
 },
@@ -961,7 +1033,7 @@ attn(){
     s += arrow(198, 146, 250, 146);
     s += T(30, 260, 't-mono', 'x');
     s += arrow(44, 256, 78, 256);
-    s += zbox(80, 228, 118, 56, 'W_DKV', `${a.d} → ${a.latent}`, 'matmul', 'boxw', 'lowrank');
+    s += zbox(80, 228, 118, 56, 'W_DKV', `${a.d} -> ${a.latent}`, 'matmul', 'boxw', 'lowrank');
     s += arrow(198, 256, 246, 230);
     s += headPanel(250, 118, {mla:true});
     s += arrow(560, 300, 640, 300);
@@ -992,10 +1064,11 @@ attn(){
 
   // KV cache note
   const hd = a.headDim || Math.round(a.d/a.qHeads);
+  const mlaCache = a.latent + (a.ropeDim||0);
   const cacheNote = a.attn==='MLA'
-    ? `KV cache per token per layer: just the ${a.latent}-dim latent — ~${Math.max(2,Math.round(2*a.qHeads*hd/a.latent))}× smaller than per-head K/V`
-    : `KV cache per token per layer: 2 × ${a.kvHeads} × ${hd} = ${2*a.kvHeads*hd} numbers` +
-      (a.kvHeads<a.qHeads ? ` — ${Math.round(a.qHeads/a.kvHeads)}× smaller than full per-head K/V` : '');
+    ? `KV cache per token per layer: ${a.latent}${a.ropeDim?' + '+a.ropeDim+' (rotary key)':''} = ${mlaCache} numbers, vs ${2*a.qHeads*hd} for per-head K/V (${Math.round(2*a.qHeads*hd/mlaCache)}x smaller)`
+    : `KV cache per token per layer: 2 x ${a.kvHeads} x ${hd} = ${2*a.kvHeads*hd} numbers` +
+      (a.kvHeads<a.qHeads ? `, ${Math.round(a.qHeads/a.kvHeads)}x smaller than full per-head K/V` : '');
   s += rect(36, 420, 560, 34, '', 5, `fill="${C.g10}"`);
   s += T(52, 441, 't-mono', cacheNote);
   if(a.attnNotes && a.attnNotes.length){
@@ -1003,15 +1076,15 @@ attn(){
   }
 
   const plains = {
-    MHA:`Every one of the ${a.qHeads} heads gets its own private query, key and value projection — maximum flexibility, maximum memory. During generation the K and V of every past token must be cached, and with per-head K/V that cache grows fast.`,
-    GQA:`${a.qHeads} query heads, but only ${a.kvHeads} key/value heads: each group of ${a.qHeads/a.kvHeads} queries shares one K/V pair. Nearly all of MHA\u2019s quality, with a KV cache ${a.qHeads/a.kvHeads}× smaller — this is why nearly every modern dense model uses it.`,
-    MQA:`The extreme end of sharing: all ${a.qHeads} query heads read from one single key/value head. The KV cache shrinks by ${a.qHeads}×, which made long-context serving practical on 2023 hardware, at a small quality cost GQA later recovered.`,
-    MLA:`Instead of sharing K/V heads, MLA compresses them away entirely: x is projected down to a ${a.latent}-dim latent, and full K and V are re-expanded from it on the fly. Only the tiny latent is cached — smaller than even MQA, but with per-head expressiveness closer to full MHA.`
+    MHA:`Every one of the ${a.qHeads} heads gets its own private query, key and value projection: maximum flexibility, maximum memory. During generation the K and V of every past token must be cached, and with per-head K/V that cache grows fast.`,
+    GQA:`${a.qHeads} query heads, but only ${a.kvHeads} key/value heads: each group of ${a.qHeads/a.kvHeads} queries shares one K/V pair. Nearly all of MHA's quality, with a KV cache ${Math.round(a.qHeads/a.kvHeads)}x smaller. This is why nearly every modern dense model uses it.`,
+    MQA:`The extreme end of sharing: all ${a.qHeads} query heads read from one single key/value head. The KV cache shrinks by ${a.qHeads}x, which made long-context serving practical on early hardware, at a small quality cost that GQA later recovered.`,
+    MLA:`Instead of sharing K/V heads, MLA compresses them away entirely: x is projected down to a ${a.latent}-dim latent, and full K and V are re-expanded from it on the fly. Only the tiny latent is cached, smaller than even MQA, but with per-head expressiveness closer to full MHA.`
   };
   const maths = {
     MHA:`headᵢ = SDPA(x·W_qᵢ, x·W_kᵢ, x·W_vᵢ)    i = 1…${a.qHeads}\nout = concat(head₁…head_${a.qHeads}) · W_o`,
-    GQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k_g(i), x·W_v_g(i))\ng(i) = ⌈i / ${a.qHeads/a.kvHeads}⌉ → ${a.kvHeads} K/V groups`,
-    MQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k, x·W_v)   — one shared W_k, W_v`,
+    GQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k_g(i), x·W_v_g(i))\ng(i) = ⌈i / ${a.qHeads/a.kvHeads}⌉ -> ${a.kvHeads} K/V groups`,
+    MQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k, x·W_v)    (one shared W_k, W_v)`,
     MLA:`c = x·W_DKV ∈ ℝ^${a.latent}        (cached)\nK = c·W_UK,  V = c·W_UV      (recomputed per step)\nQ = (x·W_DQ)·W_UQ            (low-rank too)`
   };
   return { svg:s, title:titleMap[a.attn], crumb:'attention', plain:plains[a.attn], math:maths[a.attn] };
@@ -1020,12 +1093,12 @@ attn(){
 /* ============ scaled dot-product attention ============ */
 sdpa(){
   let s = '';
-  s += T(36, 44, 't-title', 'Scaled dot-product attention — one head');
+  s += T(36, 44, 't-title', 'Scaled dot-product attention, one head');
   // Q and K matrices
   s += matglyph(60, 120, 96, 96, 5, 5, C.p20);
-  s += T(108, 236, 't-sub', 'Q — n × d_h', 'middle');
+  s += T(108, 236, 't-sub', 'Q, n × d_h', 'middle');
   s += matglyph(60, 300, 96, 96, 5, 5, C.p20);
-  s += T(108, 416, 't-sub', 'Kᵀ — d_h × n', 'middle');
+  s += T(108, 416, 't-sub', 'Kᵀ, d_h × n', 'middle');
   s += line(156, 168, 200, 230, 'wire-p');
   s += line(156, 348, 200, 262, 'wire-p');
   s += `<g class="clk" data-zoom="matmul" data-ctx="qk" tabindex="0" role="button" aria-label="Q K transpose matmul, zoom in">${rect(202,208,86,84,'boxw hitrect',6)}${T(245,244,'t-lbl','Q·Kᵀ','middle')}${T(245,262,'t-sub','matmul','middle')}<text x="281" y="223" class="zoomglyph" text-anchor="end">+</text></g>`;
@@ -1066,13 +1139,13 @@ ffn(ctx){
   const din = a.d, dmid = isExpert? a.ffnDim : a.ffnDim;
   const gated = !!a.gated;
   let s = '';
-  s += T(36, 44, 't-title', isExpert? 'One expert — a small gated MLP' : `The MLP — where facts live`);
+  s += T(36, 44, 't-title', isExpert? 'One expert, a small gated MLP' : `The MLP, where facts live`);
   if(gated){
     s += T(30, 250, 't-mono', 'x');
     s += line(44, 246, 70, 180, 'wire-p'); s += arrow(70,180,96,180,'wire-p');
     s += line(44, 246, 70, 320, 'wire-p'); s += arrow(70,320,96,320,'wire-p');
-    s += zbox(98, 152, 120, 56, 'W_gate', `${din} → ${dmid}`, 'matmul', 'boxw', 'ffn');
-    s += zbox(98, 292, 120, 56, 'W_up', `${din} → ${dmid}`, 'matmul', 'boxw', 'ffn');
+    s += zbox(98, 152, 120, 56, 'W_gate', `${din} -> ${dmid}`, 'matmul', 'boxw', 'ffn');
+    s += zbox(98, 292, 120, 56, 'W_up', `${din} -> ${dmid}`, 'matmul', 'boxw', 'ffn');
     s += arrow(218, 180, 262, 180);
     s += zbox(264, 152, 104, 56, a.act, 'the gate', 'act');
     s += arrow(368, 180, 430, 236);
@@ -1080,26 +1153,26 @@ ffn(ctx){
     s += `<circle cx="446" cy="250" r="15" class="boxw"/>` + T(446, 255, 't-lbl', '⊙', 'middle');
     s += T(446, 290, 't-sub', 'elementwise product', 'middle');
     s += arrow(461, 250, 520, 250);
-    s += zbox(522, 222, 120, 56, 'W_down', `${dmid} → ${din}`, 'matmul', 'boxw', 'ffn');
+    s += zbox(522, 222, 120, 56, 'W_down', `${dmid} -> ${din}`, 'matmul', 'boxw', 'ffn');
     s += arrow(642, 250, 690, 250);
-    s += T(698, 254, 't-mono', '→ back to stream');
+    s += T(698, 254, 't-mono', '-> back to stream');
   } else {
     s += T(30, 254, 't-mono', 'x');
     s += arrow(44, 250, 96, 250);
-    s += zbox(98, 222, 130, 56, 'W_up', `${din} → ${dmid}`, 'matmul', 'boxw', 'ffn');
+    s += zbox(98, 222, 130, 56, 'W_up', `${din} -> ${dmid}`, 'matmul', 'boxw', 'ffn');
     s += arrow(228, 250, 280, 250);
     s += zbox(282, 222, 110, 56, a.act, 'nonlinearity', 'act');
     s += arrow(392, 250, 444, 250);
-    s += zbox(446, 222, 130, 56, 'W_down', `${dmid} → ${din}`, 'matmul', 'boxw', 'ffn');
+    s += zbox(446, 222, 130, 56, 'W_down', `${dmid} -> ${din}`, 'matmul', 'boxw', 'ffn');
     s += arrow(576, 250, 626, 250);
-    s += T(634, 254, 't-mono', '→ back to stream');
+    s += T(634, 254, 't-mono', '-> back to stream');
   }
-  const share = isExpert? '' : ' Roughly two thirds of the model\u2019s parameters sit in these MLPs — interpretability work keeps finding that this is where factual associations are stored.';
+  const share = isExpert? '' : ' Roughly two thirds of the model\u2019s parameters sit in these MLPs; interpretability work keeps finding that this is where factual associations are stored.';
   return { svg:s,
     title: isExpert? 'One expert' : 'The MLP', crumb: isExpert? 'expert' : 'MLP',
     plain: (isExpert
-      ? `Each expert is just a normal gated MLP, only narrower (${din} → ${dmid} instead of a dense model's 4× blow-up). With ${a.experts} of them per layer, the model trades one big generalist for a crowd of small specialists and picks a few per token.`
-      : `Expand, bend, contract: project each token's vector up to ${dmid} dimensions, apply a nonlinearity, project back down. No mixing between tokens here — each position is processed alone.`) + share,
+      ? `Each expert is just a normal gated MLP, only narrower (${din} -> ${dmid} instead of a dense model's 4x blow-up). With ${a.experts} of them per layer, the model trades one big generalist for a crowd of small specialists and picks a few per token.`
+      : `Expand, bend, contract: project each token's vector up to ${dmid} dimensions, apply a nonlinearity, project back down. No mixing between tokens here, each position is processed alone.`) + share,
     math: gated
       ? `FFN(x) = W_down · ( ${a.act}(W_gate·x) ⊙ W_up·x )\n${(ACT_FN[a.act]||ACT_FN.SiLU).math}`
       : `FFN(x) = W_down · ${a.act}(W_up·x)\n${(ACT_FN[a.act]||ACT_FN.GELU).math}`
@@ -1110,7 +1183,7 @@ ffn(ctx){
 moe(){
   const a = arch;
   let s = '';
-  s += T(36, 44, 't-title', `Mixture of experts — top-${a.topk} of ${a.experts}`);
+  s += T(36, 44, 't-title', `Mixture of experts, top-${a.topk} of ${a.experts}`);
   s += T(30, 254, 't-mono', 'x');
   s += arrow(44, 250, 88, 250);
   s += zbox(90, 214, 120, 72, 'Router', `scores all ${a.experts}`, 'router');
@@ -1127,11 +1200,11 @@ moe(){
     s += `<g class="clk" data-zoom="ffn" data-ctx="expert" tabindex="0" role="button" aria-label="expert ${idx+1}, zoom in">${inner}</g>`;
     idx++;
   }
-  s += T(gx+ (4*(ew+gapx)-gapx)/2, gy+4*(eh+gapy)+8, 't-sub', `… × ${a.experts} routed experts — ${a.topk} light up per token`, 'middle');
+  s += T(gx+ (4*(ew+gapx)-gapx)/2, gy+4*(eh+gapy)+8, 't-sub', `… × ${a.experts} routed experts, ${a.topk} light up per token`, 'middle');
   // shared expert (if this architecture has one)
   if(a.shared){
     const shx=gx, shy=gy+4*(eh+gapy)+26;
-    const shInner = rect(shx, shy, 4*(ew+gapx)-gapx, 34, 'boxp hitrect', 5) + T(shx+(4*(ew+gapx)-gapx)/2, shy+21, 't-lbl', `shared expert${a.shared>1?'s ×'+a.shared:''} — always on`, 'middle');
+    const shInner = rect(shx, shy, 4*(ew+gapx)-gapx, 34, 'boxp hitrect', 5) + T(shx+(4*(ew+gapx)-gapx)/2, shy+21, 't-lbl', `shared expert${a.shared>1?'s ×'+a.shared:''}, always on`, 'middle');
     s += `<g class="clk" data-zoom="ffn" data-ctx="expert" tabindex="0" role="button" aria-label="shared expert, zoom in">${shInner}</g>`;
   }
   // weighted sum
@@ -1139,7 +1212,7 @@ moe(){
   s += addNode(628, 250, 'add');
   s += T(628, 292, 't-sub', 'weighted sum', 'middle');
   s += arrow(643, 250, 690, 250);
-  s += T(698, 254, 't-mono', '→ back to stream');
+  s += T(698, 254, 't-mono', '-> back to stream');
   // capacity chip
   s += rect(700, 140, 262, 92, '', 6, `fill="${C.g10}"`);
   s += T(716, 166, 't-lbl', 'why bother?');
@@ -1148,7 +1221,7 @@ moe(){
   s += T(716, 224, 't-cap', 'knowledge of a giant, cost of a mid-size');
   return { svg:s,
     title:'Mixture of experts', crumb:'MoE layer',
-    plain:`The dense MLP is replaced by ${a.experts} smaller ones, and a tiny router decides which ${a.topk} see each token.${a.shared?' A shared expert always runs, catching common patterns so the routed ones can specialize.':''} Different tokens in the same sentence genuinely take different paths — run the token flow on the model view to watch it happen.`,
+    plain:`The dense MLP is replaced by ${a.experts} smaller ones, and a tiny router decides which ${a.topk} see each token.${a.shared?' A shared expert always runs, catching common patterns so the routed ones can specialize.':''} Different tokens in the same sentence genuinely take different paths. Run the token flow on the model view to watch it happen.`,
     math:`y = ${a.shared?'E_shared(x) + ':''}Σ_{i ∈ top-${a.topk}} gᵢ · Eᵢ(x)\ngᵢ = normalized router score for expert i`
   };
 },
@@ -1157,7 +1230,7 @@ moe(){
 router(){
   const a = arch;
   let s = '';
-  s += T(36, 44, 't-title', 'The router — a tiny classifier over experts');
+  s += T(36, 44, 't-title', 'The router, a tiny classifier over experts');
   s += T(30, 254, 't-mono', 'x');
   s += arrow(44, 250, 88, 250);
   s += zbox(90, 218, 120, 64, 'W_r', `${a.d} × ${a.experts}`, 'matmul', 'boxw', 'router');
@@ -1171,7 +1244,7 @@ router(){
     if(topSet.has(i)) s += T(x+8, 300-h-6, 't-mono-p', '✓', 'middle');
   });
   s += line(254, 301, 258+16*24, 301, 'wire');
-  s += T(258, 326, 't-cap', `one score per expert (${a.experts} total, 16 drawn) — keep the top ${a.topk}, drop the rest`);
+  s += T(258, 326, 't-cap', `one score per expert (${a.experts} total, 16 drawn), keep the top ${a.topk}, drop the rest`);
   s += arrow(650, 250, 694, 250);
   s += zbox(698, 218, 118, 64, 'softmax', `over the ${a.topk} kept`, 'softmax', 'boxw', 'router');
   s += arrow(816, 250, 856, 250);
@@ -1179,8 +1252,8 @@ router(){
   s += T(862, 262, 't-mono', 'g₁ … g₈');
   return { svg:s,
     title:'Expert router', crumb:'router',
-    plain:`One small matrix multiply produces a score for every expert; the top ${a.topk} survive and their scores become mixing weights.${a.moeScore==='sigmoid'?' This model scores each expert with an independent sigmoid (V3-style) rather than a softmax across all of them, then renormalizes the kept gates.':''} Because it's a hard top-k, most of the network's weights stay untouched for this token. Keeping the experts evenly loaded is its own research problem — V3-style models nudge scores with a learned bias instead of an auxiliary loss.`,
-    math:`s = ${a.moeScore==='sigmoid'?'σ(x · W_r)':'x · W_r'} ∈ ℝ^${a.experts}\nkeep top-${a.topk}(s + b)      b = load-balancing bias\ng = ${a.moeScore==='sigmoid'?'s_kept / Σ s_kept':'softmax(s_kept)'}`
+    plain:`One small matrix multiply produces a score for every expert; the top ${a.topk} survive and their scores become mixing weights.${a.moeScore==='sigmoid'?' This model scores each expert with an independent sigmoid (V3-style) rather than a softmax across all of them, then renormalizes the kept gates.':''} Because it's a hard top-k, most of the network's weights stay untouched for this token. Keeping the experts evenly loaded is its own research problem; V3-style models nudge scores with a learned bias instead of an auxiliary loss.`,
+    math:`s = ${a.moeScore==='sigmoid'?'σ(x · W_r)':'x · W_r'} ∈ ℝ^${a.experts}\nselect top-${a.topk} by (s + b)    b = balancing bias, selection only\ng = ${a.moeScore==='sigmoid'?'s_kept / Σ s_kept   (gates use the raw scores)':'softmax(s_kept)   (gates use the raw scores)'}`
   };
 },
 
@@ -1188,7 +1261,7 @@ router(){
 norm(ctx){
   const a = arch, isRMS = a.norm==='RMSNorm';
   let s = '';
-  s += T(36, 44, 't-title', `${a.norm} — keeping activations tame`);
+  s += T(36, 44, 't-title', `${a.norm}, keeping activations tame`);
   const before=[64,18,88,30,10,74,42,24], after=[40,22,46,28,16,42,32,25];
   before.forEach((h,i)=> s += `<rect x="${100+i*30}" y="${300-h}" width="20" height="${h}" rx="2" fill="${C.p30}"/>`);
   s += line(96, 301, 100+8*30, 301, 'wire');
@@ -1199,11 +1272,11 @@ norm(ctx){
   after.forEach((h,i)=> s += `<rect x="${450+i*30}" y="${300-h}" width="20" height="${h}" rx="2" fill="${C.p50}"/>`);
   s += line(446, 301, 450+8*30, 301, 'wire');
   s += T(562, 330, 't-sub', 'same direction, unit scale', 'middle');
-  s += T(100, 400, 't-cap', ctx==='final' ? 'this final copy runs once more before the LM head, so logits start from a stable scale' : 'runs before each sublayer (pre-norm) — the sublayer sees a clean input while the raw residual flows past untouched');
+  s += T(100, 400, 't-cap', ctx==='final' ? 'this final copy runs once more before the LM head, so logits start from a stable scale' : (a.postNorm ? 'this model applies its norms after each sublayer instead of before (post-norm variant, OLMo-2 style)' : 'runs before each sublayer (pre-norm): the sublayer sees a clean input while the raw residual flows past untouched'));
   return { svg:s,
     title:a.norm, crumb:a.norm,
     plain: isRMS
-      ? 'RMSNorm rescales each token\u2019s vector to unit root-mean-square, then multiplies by a learned per-dimension gain. It skips LayerNorm\u2019s mean-subtraction and bias entirely — measurably cheaper, and quality doesn\u2019t drop. Nearly every post-2022 model made this swap.'
+      ? 'RMSNorm rescales each token\u2019s vector to unit root-mean-square, then multiplies by a learned per-dimension gain. It skips LayerNorm\u2019s mean-subtraction and bias entirely; it is measurably cheaper and quality does not drop. Nearly every post-2022 model made this swap.'
       : 'LayerNorm re-centers each token\u2019s vector to mean 0, rescales it to variance 1, then applies a learned gain and bias. Without it, activations drift in scale as they pass through dozens of layers and training destabilizes.',
     math: isRMS
       ? 'RMSNorm(x) = γ ⊙ x / RMS(x)\nRMS(x) = √( mean(x²) + ε )'
@@ -1216,7 +1289,7 @@ act(){
   const a = arch, gated = !!a.gated;
   const F = ACT_FN[a.act] || ACT_FN.SiLU;
   let s = '';
-  s += T(36, 44, 't-title', gated ? `${a.act} — the gate inside ${a.actName}` : `${a.act} — the nonlinearity`);
+  s += T(36, 44, 't-title', gated ? `${a.act}, the gate inside ${a.actName}` : `${a.act}, the nonlinearity`);
   const cx=320, cy=280, sx=46;
   let maxA=0.6;
   for(let z=-4.6; z<=4.6; z+=0.1) maxA=Math.max(maxA, Math.abs(F.f(z)));
@@ -1245,7 +1318,7 @@ act(){
   return { svg:s,
     title: gated ? `${a.act} / ${a.actName}` : a.act, crumb:'activation',
     plain: F.plain + (gated
-      ? ` Here it plays the gate in ${a.actName}: one linear path computes content, and this curve decides — dimension by dimension — how much of it passes through.`
+      ? ` Here it plays the gate in ${a.actName}: one linear path computes content, and this curve decides, dimension by dimension, how much of it passes through.`
       : ' This curve is the only nonlinearity in the MLP; remove it and the two matrices would collapse into one.'),
     math: F.math
   };
@@ -1254,21 +1327,21 @@ act(){
 /* ============ residual add ============ */
 add(){
   let s = '';
-  s += T(36, 44, 't-title', 'Residual add — the gradient highway');
+  s += T(36, 44, 't-title', 'Residual add, the gradient highway');
   s += matglyph(120, 200, 200, 30, 1, 10, C.g30);
-  s += T(220, 254, 't-sub', 'x — what the stream already knew', 'middle');
+  s += T(220, 254, 't-sub', 'x, what the stream already knew', 'middle');
   s += T(360, 222, 't-lbl', '+');
   s += matglyph(400, 200, 200, 30, 1, 10, C.p30);
-  s += T(500, 254, 't-sub', 'sublayer output — the small update', 'middle');
+  s += T(500, 254, 't-sub', 'sublayer output, the small update', 'middle');
   s += T(640, 222, 't-lbl', '=');
   s += matglyph(680, 200, 200, 30, 1, 10, C.p50);
   s += T(780, 254, 't-sub', 'refined stream', 'middle');
-  s += T(120, 340, 't-cap', 'each sublayer only nudges the vector — nothing is ever overwritten. Gradients flow straight through the “+” untouched,');
-  s += T(120, 358, 't-cap', 'which is the single trick that lets networks 61 layers deep actually train.');
+  s += T(120, 340, 't-cap', 'each sublayer only nudges the vector, nothing is ever overwritten. Gradients flow straight through the “+” untouched,');
+  s += T(120, 358, 't-cap', `which is the single trick that lets networks ${arch.layers} layers deep actually train.`);
   return { svg:s,
     title:'Residual connection', crumb:'add',
     plain:'The simplest operation in the model and arguably the most important. Instead of replacing the token\u2019s vector, every sublayer adds a correction to it. The untouched path gives gradients a direct route from the loss back to layer one, and lets each layer learn a small refinement rather than the whole function.',
-    math:'y = x + f(x)\n∂y/∂x = I + ∂f/∂x   — the identity term never vanishes'
+    math:'y = x + f(x)\n∂y/∂x = I + ∂f/∂x    (the identity term never vanishes)'
   };
 },
 
@@ -1276,17 +1349,17 @@ add(){
 matmul(ctx){
   let s = '';
   const labels = {
-    wproj:{a:'x  (n × d)', b:'W  (d × d)', c:'projection (n × d)', note:'a learned linear map — this is where the model\u2019s knowledge physically lives'},
-    qk:{a:'Q  (n × d_h)', b:'Kᵀ  (d_h × n)', c:'scores (n × n)', note:'every query meets every key — the quadratic heart of attention'},
+    wproj:{a:'x  (n × d)', b:'W  (d × d)', c:'projection (n × d)', note:'a learned linear map: this is where the model\u2019s knowledge physically lives'},
+    qk:{a:'Q  (n × d_h)', b:'Kᵀ  (d_h × n)', c:'scores (n × n)', note:'every query meets every key, the quadratic heart of attention'},
     av:{a:'weights  (n × n)', b:'V  (n × d_h)', c:'out (n × d_h)', note:'each output row is a probability-weighted average of value rows'},
     lmhead:{a:'x  (1 × d)', b:'W_lm  (d × vocab)', c:'logits (1 × vocab)', note:'one score for every word in the vocabulary, in a single multiply'},
-    lookup:{a:'onehot(id)  (1 × vocab)', b:'E  (vocab × d)', c:'x (1 × d)', note:'a lookup is just a matmul with a one-hot vector — so it\u2019s implemented as a row read'},
-    lowrank:{a:'x  (1 × d)', b:'W_down then W_up', c:'full-size again', note:'two thin matrices approximate one fat one — far fewer numbers to store'},
+    lookup:{a:'onehot(id)  (1 × vocab)', b:'E  (vocab × d)', c:'x (1 × d)', note:'a lookup is just a matmul with a one-hot vector, so it\u2019s implemented as a row read'},
+    lowrank:{a:'x  (1 × d)', b:'W_down then W_up', c:'full-size again', note:'two thin matrices approximate one fat one, far fewer numbers to store'},
     ffn:{a:'x  (n × d)', b:'W  (d × d_ff)', c:'hidden (n × d_ff)', note:'the expand / contract multiplies of the MLP'},
     router:{a:'x  (1 × d)', b:'W_r  (d × experts)', c:'scores', note:'the cheapest matmul in the model, deciding where the expensive ones happen'}
   };
   const L = labels[ctx] || labels.wproj;
-  s += T(36, 44, 't-title', 'Matrix multiplication — the atom');
+  s += T(36, 44, 't-title', 'Matrix multiplication, the atom');
   s += T(36, 64, 't-cap', 'over 95% of an LLM\u2019s compute is exactly this operation, tiled onto GPU tensor cores');
   // A
   s += matglyph(90, 150, 168, 112, 4, 6, C.p20, null, [[1,0],[1,1],[1,2],[1,3],[1,4],[1,5]]);
@@ -1304,7 +1377,7 @@ matmul(ctx){
   return { svg:s,
     title:'Matmul', crumb:'matmul',
     plain:`You have reached the bottom of the zoom. Every projection, every attention score, every logit is this one operation repeated at staggering scale: multiply matching entries of a row and a column, sum them, write one number. ${L.note.charAt(0).toUpperCase()+L.note.slice(1)}.`,
-    math:'C[i,j] = Σₖ A[i,k] · B[k,j]\ncost: 2·n·d·m FLOPs for (n×d)·(d×m) — hence the obsession with GPU throughput'
+    math:'C[i,j] = Σₖ A[i,k] · B[k,j]\ncost: 2·n·d·m FLOPs for (n×d)·(d×m), hence the obsession with GPU throughput'
   };
 },
 
@@ -1312,17 +1385,17 @@ matmul(ctx){
 softmax(ctx){
   let s = '';
   const notes = {
-    attention:'here it turns raw relevance scores into mixing weights over past tokens — each row of the score matrix becomes a recipe for blending values',
+    attention:'here it turns raw relevance scores into mixing weights over past tokens, each row of the score matrix becomes a recipe for blending values',
     router:'here it turns the surviving expert scores into mixing weights for combining expert outputs',
-    lmhead:'here it turns vocabulary logits into the final next-token distribution — the temperature knob divides logits first, flattening or sharpening the result',
+    lmhead:'here it turns vocabulary logits into the final next-token distribution, the temperature knob divides logits first, flattening or sharpening the result',
     generic:''
   };
-  s += T(36, 44, 't-title', 'Softmax — scores into probabilities');
+  s += T(36, 44, 't-title', 'Softmax, scores into probabilities');
   const logits=[1.8,-0.6,2.9,0.4,-1.4];
   const exps = logits.map(z=>Math.exp(z));
   const Z = exps.reduce((p,q)=>p+q,0);
   const stageX=[80, 400, 700];
-  const stageT=['raw scores z', 'exp(z) — all positive', '÷ sum — adds to 1'];
+  const stageT=['raw scores z', 'exp(z), all positive', '÷ sum, adds to 1'];
   logits.forEach((z,i)=>{
     const h=z*22, x=stageX[0]+i*42;
     s += `<rect x="${x}" y="${h>=0?280-h:280}" width="28" height="${Math.abs(h)}" rx="2" fill="${C.g40}"/>`;
@@ -1346,7 +1419,7 @@ softmax(ctx){
   s += T(80, 438, 't-cap', notes[ctx]||notes.generic);
   return { svg:s,
     title:'Softmax', crumb:'softmax',
-    plain:`Any list of real numbers in, a probability distribution out — bigger scores get disproportionately more mass. ${notes[ctx]||''} It appears in exactly three places in a transformer: attention rows, MoE routers, and the final output.`,
+    plain:`Any list of real numbers in, a probability distribution out: bigger scores get disproportionately more mass. ${notes[ctx]||''} It appears in three places in a transformer: attention rows, most MoE routers (V3-style ones use sigmoids instead), and the final output.`,
     math:'softmax(z)ᵢ = e^{zᵢ/T} / Σⱼ e^{zⱼ/T}\nT < 1 sharpens, T > 1 flattens (T only used at the LM head)'
   };
 }
@@ -1509,7 +1582,7 @@ function finishFlow(toks){
   }
   // result panel
   candlist.innerHTML='';
-  document.getElementById('resulthead').textContent = `Next-token distribution — after "${toks.join(' ')}"`;
+  document.getElementById('resulthead').textContent = `Next-token distribution, after "${toks.join(' ')}"`;
   dist.forEach((d,i)=>{
     const row = document.createElement('div'); row.className='cand';
     const b = document.createElement('button'); b.className='ctok'; b.textContent = d.tok;
@@ -1535,13 +1608,13 @@ const FORMATS = [
   {id:'fp32', name:'FP32', bytes:4, s:1, e:8, m:23, kind:'float',
    desc:'Full precision. The training default; almost never needed to run a model.'},
   {id:'fp16', name:'FP16', bytes:2, s:1, e:5, m:10, kind:'float',
-   desc:'Half precision. The long-standing inference default — half the memory, no visible quality loss.'},
+   desc:'Half precision. The long-standing inference default, half the memory, no visible quality loss.'},
   {id:'bf16', name:'BF16', bytes:2, s:1, e:8, m:7, kind:'float',
-   desc:'Same size as FP16 but trades precision for FP32\u2019s full range — much harder to overflow.'},
+   desc:'Same size as FP16 but trades precision for FP32\u2019s full range, much harder to overflow.'},
   {id:'fp8', name:'FP8 (e4m3)', bytes:1, s:1, e:4, m:3, kind:'float',
    desc:'Quarter precision. DeepSeek-V3 was trained largely in this format on H800s.'},
   {id:'int8', name:'INT8', bytes:1, s:1, i:7, kind:'int', levels:255,
-   desc:'256 evenly spaced levels, scaled per tensor or per channel. The workhorse of CPU inference.'},
+   desc:'8-bit integers with one scale per tensor or channel (this demo: symmetric absmax, 255 levels). The workhorse of CPU and edge inference.'},
   {id:'int4', name:'INT4', bytes:0.5, s:1, i:3, kind:'int', levels:15,
    desc:'Just 16 levels. With smart grouping (GPTQ, AWQ, GGUF Q4) this runs 70B models on gaming GPUs.'}
 ];
@@ -1671,8 +1744,8 @@ function drawSizeBars(){
   note.innerHTML = fit24.length
     ? `On a 24 GB consumer GPU, <b>${curSize.name}</b> fits in <b>${fit24.join(', ')}</b>.`
     : fit80.length
-      ? `<b>${curSize.name}</b> needs a datacenter GPU: fits 80 GB in <b>${fit80.join(', ')}</b> — consumer cards need multi-GPU or offloading.`
-      : `<b>${curSize.name}</b> doesn\u2019t fit a single GPU in any format — this is multi-node territory (and why MoE inference is a systems problem).`;
+      ? `<b>${curSize.name}</b> needs a datacenter GPU: fits 80 GB in <b>${fit80.join(', ')}</b>; consumer cards need multi-GPU or offloading.`
+      : `<b>${curSize.name}</b> doesn\u2019t fit a single GPU in any format; this is multi-node territory (and why MoE inference is a systems problem).`;
 }
 
 /* ==================================================================
@@ -1698,7 +1771,7 @@ drawQuantViz();
 drawSizeBars();
 
 /* ==================================================================
-   GUIDED WALKTHROUGH — follow one token, zooming stage by stage
+   GUIDED WALKTHROUGH, follow one token, zooming stage by stage
    ================================================================== */
 const sleep = ms => new Promise(r=>setTimeout(r, ms));
 const tourcard = document.getElementById('tourcard');
@@ -1739,42 +1812,45 @@ function buildTour(tok, pos, n){
   const S=(scene,ctx)=>({scene, ctx:ctx||''});
   const steps=[];
   steps.push({path:[S('model')],
-    text:`We follow "${tok}" — position ${pos+1} of ${n} — through ${a.name}. Every token walks this same pipeline${moe?', but each one picks its own experts along the way':' in lockstep with its neighbors'}.`});
+    text:`We follow "${tok}", position ${pos+1} of ${n}, through ${a.name}. Every token walks this same pipeline${moe?', but each one picks its own experts along the way':' in lockstep with its neighbors'}.`});
   steps.push({path:[S('model'),S('embed')],
-    text:`"${tok}" maps to (roughly) id ${id.toLocaleString()} in the ${a.vocab}-token vocabulary. The embedding reads that row: ${a.d} numbers that every layer from here on will reshape. ${a.pos.startsWith('learned') ? `Position row ${pos+1} is added on top, so the model knows where "${tok}" sits in the sentence.` : `No position math here — ${a.pos} will encode order later, inside attention.`}`});
+    text:`"${tok}" maps to (roughly) id ${id.toLocaleString()} in the ${a.vocab}-token vocabulary. The embedding reads that row: ${a.d} numbers that every layer from here on will reshape. ${a.pos.startsWith('learned') ? `Position row ${pos+1} is added on top, so the model knows where "${tok}" sits in the sentence.` : `No position math here, ${a.pos} will encode order later, inside attention.`}`});
+  const par = !!a.parallelBlock;
   steps.push({path:[S('model'),S('block')],
-    text:`Block 1 of ${a.layers}. "${tok}"'s vector rides the residual stream across the top of nothing — the stream itself is untouched; the two sublayers below each add a refinement onto it.`});
+    text:`Block 1 of ${a.layers}. "${tok}"'s vector enters the residual stream. The stream itself is never overwritten; ${par?'both sublayers read from it in parallel and add refinements onto it':'each sublayer adds a refinement onto it'}.`});
   steps.push({path:[S('model'),S('block'),S('norm','pre-attn')],
-    text:`First stop: ${a.norm} rescales "${tok}"'s vector to a standard magnitude. Same direction, tamer numbers — so attention always sees inputs at a predictable scale.`});
+    text:`First stop: ${a.norm} rescales "${tok}"'s vector to a standard magnitude. Same direction, tamer numbers, so the sublayers always see inputs at a predictable scale.${par?' In this parallel design, one norm output feeds attention and the MLP at the same time.':''}`});
   const attnTxt = {
-    MHA:`Now "${tok}" builds ${a.qHeads} separate queries — one per head, each with private keys and values. Each head is free to hunt for something different among the ${pos} tokens before it.`,
-    GQA:`"${tok}" builds ${a.qHeads} queries, but groups of ${Math.round(a.qHeads/a.kvHeads)} share one of ${a.kvHeads} K/V heads. Nearly MHA's quality — with a much smaller cache for "${tok}" to be remembered in later.`,
-    MQA:`"${tok}" builds ${a.qHeads} queries that all read a single shared K/V head — the most extreme cache saving there is.`,
+    MHA:`Now "${tok}" builds ${a.qHeads} separate queries, one per head, each with private keys and values. Each head is free to hunt for something different among the ${pos} tokens before it.`,
+    GQA:`"${tok}" builds ${a.qHeads} queries, but groups of ${Math.round(a.qHeads/a.kvHeads)} share one of ${a.kvHeads} K/V heads. Nearly MHA's quality, with a much smaller cache for "${tok}" to be remembered in later.`,
+    MQA:`"${tok}" builds ${a.qHeads} queries that all read a single shared K/V head, the most extreme cache saving there is.`,
     MLA:`"${tok}"'s vector is compressed into a ${a.latent}-dim latent; the full K and V are re-expanded from it on demand. Only that small latent is cached for the tokens that come after.`
   };
   steps.push({path:[S('model'),S('block'),S('attn')], text:attnTxt[a.attn]});
   steps.push({path:[S('model'),S('block'),S('attn'),S('sdpa')],
-    text:`The core move. "${tok}"'s query is scored against every earlier key${pos?` — ${pos} of them so far`:''}; softmax turns those scores into blend weights; the weighted mix of value vectors is what "${tok}" absorbs from its context. The causal mask means it can never peek at tokens that come after it.`});
+    text:`The core move. "${tok}"'s query is scored against every earlier key${pos?`, ${pos} of them so far`:''}; softmax turns those scores into blend weights; the weighted mix of value vectors is what "${tok}" absorbs from its context. The causal mask means it can never peek at tokens that come after it.`});
   steps.push({path:[S('model'),S('block')],
-    text:`The attention result is added back onto the stream — "${tok}" keeps everything it had, plus fresh context. Halfway through the block.`});
+    text: par
+      ? `In the parallel form, attention's output is not added yet: it waits to merge with the MLP's output at one shared junction on the stream.`
+      : `The attention result is added back onto the stream. "${tok}" keeps everything it had, plus fresh context. Halfway through the block.`});
   if(moe){
     const picks = expertPicksFor(tok);
     steps.push({path:[S('model'),S('block'),S('moe')],
-      text:`The fork in the road: a router scores all ${a.experts} experts for "${tok}" and wakes only its top ${a.topk} — say E${picks.join(', E')}, …${a.shared?' — plus the always-on shared expert':''}. The token sitting next to "${tok}" would light up a different set. This is the moment the giant model becomes cheap.`});
+      text:`The fork in the road: a router scores all ${a.experts} experts for "${tok}" and wakes only its top ${a.topk}, say E${picks.join(', E')}, …${a.shared?', plus the always-on shared expert':''}. The token sitting next to "${tok}" would light up a different set. This is the moment the giant model becomes cheap.`});
     steps.push({path:[S('model'),S('block'),S('moe'),S('router')],
       text:`The choice itself is one tiny matmul: ${a.experts} scores, keep ${a.topk}, softmax the survivors. The resulting gate weights decide how much of each expert's output flows into "${tok}"'s vector.`});
   } else {
     steps.push({path:[S('model'),S('block'),S('ffn')],
-      text:`Second sublayer: the MLP expands "${tok}"'s ${a.d} numbers to ${a.ffnDim}, bends them through ${a.gated ? 'a '+a.act+' gate' : a.act}, and contracts back down. No other tokens involved — this is where the model's stored knowledge gets applied to "${tok}" alone.`});
+      text:`Second sublayer: the MLP expands "${tok}"'s ${a.d} numbers to ${a.ffnDim}, bends them through ${a.gated ? 'a '+a.act+' gate' : a.act}, and contracts back down. No other tokens involved, this is where the model's stored knowledge gets applied to "${tok}" alone.`});
   }
   steps.push({path:[S('model'),S('block')],
-    text:`Second refinement added. That's one block done — and "${tok}" now repeats all of this ${a.layers-1} more times with different learned weights${moe?' and different expert draws':''}, growing more abstract at each pass.`});
+    text:`${par?'Both branch outputs are added onto the stream together.':'Second refinement added.'} That's one block done. "${tok}" now repeats all of this ${a.layers-1} more times with different learned weights${moe?' and different expert draws':''}, growing more abstract at each pass.`});
   steps.push({path:[S('model'),S('norm','final')],
     text:`After block ${a.layers}, one final ${a.norm} steadies "${tok}"'s vector before it gets scored.`});
   steps.push({path:[S('model'),S('lmhead')],
-    text:`"${tok}"'s finished vector — by now a compressed summary of everything up to and including it — is scored against all ${a.vocab} vocabulary entries at once, and softmax turns those scores into next-token probabilities.`});
+    text:`"${tok}"'s finished vector, by now a compressed summary of everything up to and including it, is scored against all ${a.vocab} vocabulary entries at once, and softmax turns those scores into next-token probabilities.`});
   steps.push({path:[S('model')],
-    text:`The whole journey. Hit “Run tokens” to watch all ${n} tokens make the trip at once${moe?' and scatter across the experts':''} — or click any outlined block to keep digging on your own.`});
+    text:`The whole journey. Hit “Run tokens” to watch all ${n} tokens make the trip at once${moe?' and scatter across the experts':''}, or click any outlined block to keep digging on your own.`});
   return steps;
 }
 
@@ -1800,7 +1876,7 @@ async function showStep(i){
   tour.navRunning = false;
   if(!tour.on) return;
   tprev.disabled = i===0; tnext.disabled = false;
-  tnext.textContent = i===tour.steps.length-1 ? 'finish ✓' : 'next →';
+  tnext.textContent = i===tour.steps.length-1 ? 'finish ✓' : 'next ->';
 }
 function endTour(){
   tour.on = false;
@@ -1813,25 +1889,25 @@ texit.addEventListener('click', endTour);
 stepbtn.addEventListener('click', ()=>startTour());
 
 /* ==================================================================
-   ACTIVATION ZOO — curves, formulas, prose (used by scenes + parser)
+   ACTIVATION ZOO, curves, formulas, prose (used by scenes + parser)
    ================================================================== */
 const ACT_FN = {
   'SiLU':   { f:z=> z/(1+Math.exp(-z)),
     math:'SiLU(z) = z · σ(z) = z / (1 + e⁻ᶻ)',
     plain:'SiLU (also called swish) is a smooth S-shaped ramp: near zero for negative inputs, approximately the identity for positive ones, with a small dip below zero that keeps gradients alive everywhere.',
-    cap1:'negative inputs are damped, not chopped —', cap2:'the curve stays smooth, keeping gradients healthy' },
+    cap1:'negative inputs are damped, not chopped;', cap2:'the curve stays smooth, keeping gradients healthy' },
   'GELU':   { f:z=> 0.5*z*(1+Math.tanh(Math.sqrt(2/Math.PI)*(z+0.044715*z*z*z))),
     math:'GELU(z) = z · Φ(z) ≈ 0.5z(1 + tanh(√(2/π)(z + 0.0447z³)))',
-    plain:'GELU weights each input by the probability that a standard Gaussian stays below it — a smoothed ReLU. Most checkpoints use the tanh approximation shown in the math.',
+    plain:'GELU weights each input by the probability that a standard Gaussian stays below it, a smoothed ReLU. Most checkpoints use the tanh approximation shown in the math.',
     cap1:'a smoothed ReLU: negative inputs fade out', cap2:'gradually instead of being cut at zero' },
   'ReLU':   { f:z=> Math.max(0,z),
     math:'ReLU(z) = max(0, z)',
-    plain:'The original workhorse: pass positives, zero out negatives. Cheap and sparse, but the hard corner at zero kills gradients for inactive units — which is why most LLMs moved to smooth variants.',
-    cap1:'brutally simple: negatives become exactly zero —', cap2:'cheap, sparse, but gradients die left of the origin' },
+    plain:'The original workhorse: pass positives, zero out negatives. Cheap and sparse, but the hard corner at zero kills gradients for inactive units, which is why most LLMs moved to smooth variants.',
+    cap1:'brutally simple: negatives become exactly zero;', cap2:'cheap, sparse, but gradients die left of the origin' },
   'ReLU²':  { f:z=> { const r=Math.max(0,z); return r*r; },
     math:'ReLU²(z) = max(0, z)²',
     plain:'Squared ReLU, used by Nemotron and some efficiency-focused models: like ReLU but the square grows activations superlinearly, which pairs well with certain normalization schemes and stays extremely sparse.',
-    cap1:'zero for negatives, quadratic growth for positives —', cap2:'very sparse activations, favored by Nemotron-style models' },
+    cap1:'zero for negatives, quadratic growth for positives;', cap2:'very sparse activations, favored by Nemotron-style models' },
   'Mish':   { f:z=> z*Math.tanh(Math.log(1+Math.exp(Math.min(z,30)))),
     math:'Mish(z) = z · tanh(ln(1 + eᶻ))',
     plain:'Mish is a self-gated smooth curve much like SiLU with a slightly deeper negative dip; it appears in some vision and smaller language models.',
@@ -1839,18 +1915,18 @@ const ACT_FN = {
   'Tanh':   { f:z=> Math.tanh(z),
     math:'tanh(z) = (eᶻ − e⁻ᶻ)/(eᶻ + e⁻ᶻ)',
     plain:'The classic squashing function, bounded to (−1, 1). Rare in modern transformer MLPs, but it still appears in some heads and older architectures.',
-    cap1:'squashes everything into (−1, 1) —', cap2:'saturates at both ends, so gradients vanish for large |z|' },
+    cap1:'squashes everything into (−1, 1);', cap2:'saturates at both ends, so gradients vanish for large |z|' },
   'LeakyReLU': { f:z=> z>0? z : 0.1*z,
-    math:'LeakyReLU(z) = z if z > 0, else αz  (α ≈ 0.01–0.1)',
+    math:'LeakyReLU(z) = z if z > 0, else αz  (α ≈ 0.01-0.1)',
     plain:'ReLU with a small slope for negatives so gradients never fully die. More common in GANs and vision than in language models.',
     cap1:'a small leak on the negative side', cap2:'keeps gradients from dying entirely' },
   'Sigmoid':{ f:z=> 1/(1+Math.exp(-z)),
     math:'σ(z) = 1 / (1 + e⁻ᶻ)',
     plain:'The logistic curve, bounded to (0, 1). As an MLP activation it is historical; in modern models it survives inside SiLU and in V3-style expert gates.',
-    cap1:'bounded to (0, 1) — mostly historical as an MLP', cap2:'activation, but alive inside SiLU and sigmoid routers' },
+    cap1:'bounded to (0, 1); mostly historical as an MLP', cap2:'activation, but alive inside SiLU and sigmoid routers' },
   'xIELU': { f:z=> z>0? 0.8*z + 0.2*z*z*0.25 : 0.8*(Math.exp(Math.min(z,0))-1),
     math:'xIELU: trainable blend of ELU-like (z<0) and quadratic (z>0) pieces',
-    plain:'A trainable activation with an ELU-like negative branch and an expanding positive branch, used by Falcon-H1. Drawn here with representative fixed parameters.',
+    plain:'A trainable activation with an ELU-like negative branch and an expanding positive branch, introduced with the Apertus models. Drawn here with representative fixed parameters.',
     cap1:'trainable curve (drawn with representative parameters)', cap2:'ELU-like below zero, expanding above' }
 };
 const ACT_ALIAS = {
@@ -1864,7 +1940,7 @@ const EXPLICIT_GATED = new Set(['swiglu','geglu','reglu','glu','gegelu']);
 const GATED_NAME = {'SiLU':'SwiGLU','GELU':'GeGLU','ReLU':'ReGLU','ReLU²':'ReGLU²','Mish':'MishGLU','xIELU':'xIELU-GLU'};
 
 /* ==================================================================
-   FAMILY TABLE — curated per-model_type facts a config.json omits
+   FAMILY TABLE, curated per-model_type facts a config.json omits
    (gatedness of the MLP, QK-norm, norm topology, ALiBi, tied embeds…)
    ================================================================== */
 const FAM = {
@@ -1894,7 +1970,7 @@ const FAM = {
 };
 
 /* ==================================================================
-   CONFIG.JSON PARSER — reads what's there, reports what it assumed
+   CONFIG.JSON PARSER, reads what's there, reports what it assumed
    ================================================================== */
 const cfgpanel = document.getElementById('cfgpanel');
 const cfgurl = document.getElementById('cfgurl');
@@ -1923,31 +1999,31 @@ function buildCustomArch(cfg, label){
   /* ---- core dimensions ---- */
   const d = pick(['hidden_size','n_embd','d_model','model_dim','dim'],'d');
   const q = pick(['num_attention_heads','n_head','n_heads','attn_config.n_heads','num_heads'],'q');
-  if(!d || !q) throw new Error('no hidden size / attention heads found — is this a model config.json?');
-  const layers = pick(['num_hidden_layers','n_layer','n_layers','num_layers']) ?? (assumed.push('layers → 12 (missing)'), 12);
+  if(!d || !q) throw new Error('no hidden size / attention heads found, is this a model config.json?');
+  const layers = pick(['num_hidden_layers','n_layer','n_layers','num_layers']) ?? (assumed.push('layers -> 12 (missing)'), 12);
   const isMLA = tc.kv_lora_rank != null;
   let kv = pick(['num_key_value_heads','attn_config.kv_n_heads','n_head_kv','num_kv_heads']);
   if(kv==null){
     if(tc.multi_query===true){ kv=1; read.push('multi_query=true'); }
-    else if(isMLA){ kv=0; } // latent attention — per-head K/V doesn't apply
-    else { kv=q; assumed.push('kv heads → '+q+' (none declared ⇒ MHA)'); }
+    else if(isMLA){ kv=0; } // latent attention, per-head K/V doesn't apply
+    else { kv=q; assumed.push('kv heads -> '+q+' (none declared ⇒ MHA)'); }
   }
   const qkRope = pick(['qk_rope_head_dim']), qkNope = pick(['qk_nope_head_dim']);
   const headDim = pick(['head_dim','attention_head_dim','v_head_dim'])
-    ?? (qkNope? qkNope+(qkRope||0) : (assumed.push(`head_dim → ${Math.round(d/q)} (d/q)`), Math.round(d/q)));
-  const vocabN = pick(['vocab_size','padded_vocab_size']) ?? (assumed.push('vocab → 32,000 (missing)'), 32000);
+    ?? (qkNope? qkNope+(qkRope||0) : (assumed.push(`head_dim -> ${Math.round(d/q)} (d/q)`), Math.round(d/q)));
+  const vocabN = pick(['vocab_size','padded_vocab_size']) ?? (assumed.push('vocab -> 32,000 (missing)'), 32000);
   const ctx = pick(['max_position_embeddings','n_positions','n_ctx','max_seq_len','seq_length','model_max_length']);
 
   /* ---- MoE layout ---- */
   const experts = pick(['n_routed_experts','num_local_experts','num_experts','ffn_config.moe_num_experts','moe_num_experts']) || 0;
   const moe = experts > 1;
-  const topk = moe ? (pick(['num_experts_per_tok','ffn_config.moe_top_k','moe_top_k','top_k','moe_k']) ?? (assumed.push('top-k → 2'), 2)) : 0;
+  const topk = moe ? (pick(['num_experts_per_tok','ffn_config.moe_top_k','moe_top_k','top_k','moe_k']) ?? (assumed.push('top-k -> 2'), 2)) : 0;
   let shared = pick(['n_shared_experts','moe_num_shared_experts','num_shared_experts']) || 0;
   const sharedDim = pick(['shared_expert_intermediate_size','moe_shared_expert_intermediate_size']);
-  if(!shared && sharedDim){ shared = 1; assumed.push('shared experts → 1 (shared_expert_intermediate_size present)'); }
+  if(!shared && sharedDim){ shared = 1; assumed.push('shared experts -> 1 (shared_expert_intermediate_size present)'); }
   const denseFfn = pick(['intermediate_size','n_inner','ffn_config.ffn_hidden_size','ffn_hidden_size','ffn_dim','d_ff'])
     ?? (tc.expansion_ratio ? (read.push('expansion_ratio='+tc.expansion_ratio), tc.expansion_ratio*d)
-        : (assumed.push(`ffn → ${4*d} (4·d)`), 4*d));
+        : (assumed.push(`ffn -> ${4*d} (4·d)`), 4*d));
   const moeFfn = moe ? (pick(['moe_intermediate_size','ffn_config.moe_hidden_size']) ?? denseFfn) : denseFfn;
   const firstDense = pick(['first_k_dense_replace']) || 0;
   const sparseStep = pick(['decoder_sparse_step','moe_layer_freq']);
@@ -1971,17 +2047,17 @@ function buildCustomArch(cfg, label){
     const rs = tc.rope_scaling;
     if(rs){ const kind = rs.rope_type || rs.type || 'scaled'; posFeat.push(`${kind}${rs.factor?' ×'+rs.factor:''} scaling`); read.push('rope_scaling='+kind); }
   } else if((fam && fam.pos==='learned') || ['gpt2','opt','gpt_bigcode'].includes(mt)){ pos = 'learned positions'; }
-  else { pos = 'RoPE'; assumed.push('positions → RoPE (nothing declared; modern default)'); }
+  else { pos = 'RoPE'; assumed.push('positions -> RoPE (nothing declared; modern default)'); }
 
   /* ---- activation + gatedness ---- */
   const rawAct = pick(['hidden_act','activation_function','hidden_activation','ffn_config.ffn_act_fn.name','activation']) || '';
   const actKey = String(rawAct).toLowerCase();
-  const act = ACT_ALIAS[actKey] || (actKey ? (assumed.push(`activation "${rawAct}" unrecognized → drawn as SiLU`), 'SiLU') : (assumed.push('activation → GELU (missing)'), 'GELU'));
+  const act = ACT_ALIAS[actKey] || (actKey ? (assumed.push(`activation "${rawAct}" unrecognized -> drawn as SiLU`), 'SiLU') : (assumed.push('activation -> GELU (missing)'), 'GELU'));
   let gated;
   if(EXPLICIT_GATED.has(actKey)) gated = true;
   else if(fam && fam.gated !== undefined) gated = fam.gated;
-  else if(act === 'SiLU'){ gated = true; assumed.push('gated MLP → yes (silu in a decoder LLM ⇒ SwiGLU-style, family unknown)'); }
-  else { gated = false; assumed.push(`gated MLP → no (${act}, family unknown)`); }
+  else if(act === 'SiLU'){ gated = true; assumed.push('gated MLP -> yes (silu in a decoder LLM ⇒ SwiGLU-style, family unknown)'); }
+  else { gated = false; assumed.push(`gated MLP -> no (${act}, family unknown)`); }
   const actName = gated ? (GATED_NAME[act] || act+'-GLU') : act;
 
   /* ---- norm ---- */
@@ -1989,7 +2065,7 @@ function buildCustomArch(cfg, label){
   if('rms_norm_eps' in tc || 'rms_norm_epsilon' in tc){ norm='RMSNorm'; read.push('rms_norm_eps ✓'); }
   else if(fam && fam.norm){ norm = fam.norm; }
   else if('layer_norm_eps' in tc || 'layer_norm_epsilon' in tc || 'layernorm_epsilon' in tc){ norm='LayerNorm'; read.push('layer_norm_eps ✓'); }
-  else { norm = fam && fam.gated ? 'RMSNorm' : 'LayerNorm'; assumed.push('norm → '+norm+' (no eps key found)'); }
+  else { norm = fam && fam.gated ? 'RMSNorm' : 'LayerNorm'; assumed.push('norm -> '+norm+' (no eps key found)'); }
 
   /* ---- sliding window / layer pattern ---- */
   let sw = pick(['sliding_window','attn_config.sliding_window_size','window_size']);
@@ -2083,7 +2159,7 @@ function buildCustomArch(cfg, label){
   if(sw) attnNotes.push(`sliding window: keys older than ${fmtN(sw)} tokens fall out of view${swPattern? ' on local layers'+swPattern : ''}`);
   if(qkNorm) attnNotes.push('QK-norm: queries and keys are normalized before the dot product (training stability)');
   if(softcapA) attnNotes.push(`scores are soft-capped at ±${softcapA} before softmax`);
-  if(pos==='ALiBi') attnNotes.push('ALiBi: no rotation — a distance penalty is added straight onto the scores');
+  if(pos==='ALiBi') attnNotes.push('ALiBi: no rotation, a distance penalty is added straight onto the scores');
   if(partialPct && partialPct<1) attnNotes.push(`only ${Math.round(partialPct*100)}% of each head's dims are rotated by RoPE`);
   if(sinks) attnNotes.push('learned attention sinks absorb probability mass so real tokens aren\u2019t forced to');
   if(parallel) attnNotes.push('parallel form: attention and the MLP read the same input side by side');
@@ -2094,9 +2170,10 @@ function buildCustomArch(cfg, label){
       key:'custom', name:label, tag:`${attn} · ${moe?'MoE':'dense'}`, params,
       d, layers, qHeads:q, kvHeads:kv, headDim, attn, ffn:moe?'moe':'dense',
       act, gated, actName, norm, pos, vocab:fmtN(vocabN), vocabN,
-      ffnDim:moe?moeFfn:denseFfn, experts, topk, shared, latent:kvLora||0, moeScore,
+      ffnDim:moe?moeFfn:denseFfn, experts, topk, shared, latent:kvLora||0, ropeDim:qkRope||0, moeScore,
+      parallelBlock: !!parallel, postNorm: !!(fam && fam.postNorm),
       features, attnNotes,
-      blurb:`read from config.json — ${mt||'unknown model_type'}${quant?`, ${quant} weights`:''}${fam?'':' · unfamiliar family, parsed generically'}`
+      blurb:`read from config.json, ${mt||'unknown model_type'}${quant?`, ${quant} weights`:''}${fam?'':' · unfamiliar family, parsed generically'}`
     },
     report: { read, assumed, fam: !!fam }
   };
@@ -2116,10 +2193,10 @@ function applyCfg(cfg, srcUrl){
       modelbar.insertBefore(pill, document.getElementById('cfgpill'));
     }
     pill.innerHTML = `${esc(built.name)}<span class="tag">${esc(built.tag)}</span>`;
-    let msg = `loaded — ${built.name}: ${built.tag}, ${built.layers} layers, d=${built.d}, ${built.params}`;
+    let msg = `loaded, ${built.name}: ${built.tag}, ${built.layers} layers, d=${built.d}, ${built.params}`;
     msg += `\nread: ${report.read.join(' · ')}`;
     if(report.assumed.length) msg += `\nassumed: ${report.assumed.join(' · ')}`;
-    else msg += `\nassumed: nothing — every field came from the config`;
+    else msg += `\nassumed: nothing, every field came from the config`;
     cfgstatus.textContent = msg;
     if(arch.key==='custom'){
       arch = ARCHS.custom;
@@ -2144,7 +2221,7 @@ async function loadCfgUrl(){
     if(!r.ok) throw new Error('HTTP '+r.status);
     applyCfg(await r.json(), url);
   }catch(e){
-    cfgstatus.textContent = `fetch failed (${e.message}) — this can be CORS or a sandboxed preview. Paste the config JSON below instead.`;
+    cfgstatus.textContent = `fetch failed (${e.message}), this can be CORS or a sandboxed preview. Paste the config JSON below instead.`;
   }
 }
 document.getElementById('cfgload').addEventListener('click', loadCfgUrl);
@@ -2160,6 +2237,103 @@ document.getElementById('cfgbuild').addEventListener('click', ()=>{
   p.className='mpill cfgpill'; p.id='cfgpill';
   p.textContent='+ from config.json';
   p.addEventListener('click', ()=>{ cfgpanel.hidden = !cfgpanel.hidden; if(!cfgpanel.hidden) cfgurl.focus(); });
+  modelbar.appendChild(p);
+}
+
+/* ==================================================================
+   COMPARE MODE: two models side by side with a difference table
+   ================================================================== */
+const comparewrap = document.getElementById('comparewrap');
+const explorepageEl = document.getElementById('explorepage');
+let cmp = {on:false, a:'gpt2', b:'llama'};
+
+function archKeys(){ return [...ARCH_ORDER, ...(ARCHS.custom ? ['custom'] : [])]; }
+
+function renderModelSVG(k){
+  const saved = arch, savedG = window.MODEL_GEOM;
+  arch = ARCHS[k];
+  const meta = SCENES.model();
+  arch = saved; window.MODEL_GEOM = savedG;
+  return meta.svg;
+}
+
+const kvPerTok = a => a.attn==='MLA'
+  ? a.latent + (a.ropeDim||0)
+  : 2*a.kvHeads*(a.headDim||Math.round(a.d/a.qHeads));
+
+const CMP_ROWS = [
+  ['parameters',            a=>a.params],
+  ['hidden size d',         a=>fmtN(a.d)],
+  ['layers',                a=>a.layers],
+  ['attention',             a=>a.attn + (a.attn==='MLA' ? ` (latent ${a.latent})` : ` (${a.qHeads} Q / ${a.kvHeads} KV)`)],
+  ['head dim',              a=>a.headDim || Math.round(a.d/a.qHeads)],
+  ['KV cache / token / layer', a=>fmtN(kvPerTok(a))+' numbers'],
+  ['FFN',                   a=>a.ffn==='moe' ? `MoE: ${a.experts} experts, top-${a.topk}${a.shared?' + '+a.shared+' shared':''}` : 'dense'],
+  ['FFN width',             a=>fmtN(a.ffnDim)],
+  ['activation',            a=>a.actName],
+  ['norm',                  a=>a.norm + (a.postNorm?' (post-norm)':'') + (a.parallelBlock?' · parallel block':'')],
+  ['positions',             a=>a.pos],
+  ['vocabulary',            a=>a.vocab],
+  ['notable',               a=>(a.features||[]).join(', ') || '-']
+];
+
+function renderCompare(){
+  const A = ARCHS[cmp.a], B = ARCHS[cmp.b];
+  // selector pills
+  [['cmpA','a'],['cmpB','b']].forEach(([id,side])=>{
+    const holder = document.getElementById(id);
+    holder.innerHTML = '';
+    archKeys().forEach(k=>{
+      const btn = document.createElement('button');
+      btn.textContent = ARCHS[k].name;
+      btn.setAttribute('aria-pressed', cmp[side]===k);
+      btn.addEventListener('click', ()=>{ cmp[side]=k; renderCompare(); });
+      holder.appendChild(btn);
+    });
+  });
+  // panes
+  document.getElementById('cmpAtitle').textContent = `${A.name} (${A.tag})`;
+  document.getElementById('cmpBtitle').textContent = `${B.name} (${B.tag})`;
+  document.getElementById('cmpAsvg').innerHTML = `<svg viewBox="0 0 1000 540" role="img" aria-label="${esc(A.name)} architecture">${defs()}${renderModelSVG(cmp.a)}</svg>`;
+  document.getElementById('cmpBsvg').innerHTML = `<svg viewBox="0 0 1000 540" role="img" aria-label="${esc(B.name)} architecture">${defs()}${renderModelSVG(cmp.b)}</svg>`;
+  // table
+  let t = `<table><thead><tr><th>spec</th><th>${esc(A.name)}</th><th>${esc(B.name)}</th></tr></thead><tbody>`;
+  CMP_ROWS.forEach(([label, fn])=>{
+    const va = String(fn(A)), vb = String(fn(B));
+    const diff = va !== vb ? ' class="diff"' : '';
+    t += `<tr><td>${esc(label)}</td><td${diff}>${esc(va)}</td><td${diff}>${esc(vb)}</td></tr>`;
+  });
+  t += `</tbody></table><p class="cmpcap">Highlighted cells differ between the two models. KV cache is per token per layer; multiply by layers and context length for the full picture.</p>`;
+  document.getElementById('cmptable').innerHTML = t;
+}
+
+function enterCompare(){
+  if(cmp.on) return;
+  if(typeof tour!=='undefined' && tour.on) endTour();
+  stopFlow(); hideResult();
+  cmp.on = true;
+  cmp.a = arch.key;
+  cmp.b = archKeys().find(k=>k!==cmp.a) || cmp.a;
+  explorepageEl.classList.add('comparing');
+  comparewrap.hidden = false;
+  renderCompare();
+}
+function exitCompare(){
+  if(!cmp.on) return;
+  cmp.on = false;
+  explorepageEl.classList.remove('comparing');
+  comparewrap.hidden = true;
+}
+document.getElementById('cmpclose').addEventListener('click', exitCompare);
+document.getElementById('cmpAopen').addEventListener('click', ()=>{ const k=cmp.a; exitCompare(); if(arch.key!==k) setArch(k); });
+document.getElementById('cmpBopen').addEventListener('click', ()=>{ const k=cmp.b; exitCompare(); if(arch.key!==k) setArch(k); });
+
+/* compare pill in the model bar */
+{
+  const p = document.createElement('button');
+  p.className='mpill cfgpill'; p.id='cmppill';
+  p.textContent='compare two';
+  p.addEventListener('click', ()=>{ cmp.on ? exitCompare() : enterCompare(); });
   modelbar.appendChild(p);
 }
 
