@@ -1152,7 +1152,7 @@ ffn(ctx){
     s += arrow(642, 250, 690, 250);
     s += T(698, 254, 't-mono', '-> back to stream');
   } else {
-    s += T(30, 254, 't-mono', 'x');
+    s += T(70, 254, 't-mono', 'x', 'middle');
     s += arrow(44, 250, 96, 250);
     s += zbox(98, 222, 130, 56, 'W_up', `${din} -> ${dmid}`, 'matmul', 'boxw', 'ffn');
     s += arrow(228, 250, 280, 250);
@@ -1179,7 +1179,7 @@ moe(){
   const a = arch;
   let s = '';
   s += T(36, 44, 't-title', `Mixture of experts, top-${a.topk} of ${a.experts}`);
-  s += T(30, 254, 't-mono', 'x');
+  s += T(66, 254, 't-mono', 'x', 'middle');
   s += arrow(44, 250, 88, 250);
   s += zbox(90, 214, 120, 72, 'Router', `scores all ${a.experts}`, 'router');
   s += arrow(210, 250, 252, 250);
@@ -1226,7 +1226,7 @@ router(){
   const a = arch;
   let s = '';
   s += T(36, 44, 't-title', 'The router, a tiny classifier over experts');
-  s += T(30, 254, 't-mono', 'x');
+  s += T(66, 254, 't-mono', 'x', 'middle');
   s += arrow(44, 250, 88, 250);
   s += zbox(90, 218, 120, 64, 'W_r', `${a.d} × ${a.experts}`, 'matmul', 'boxw', 'router');
   s += arrow(210, 250, 254, 250);
