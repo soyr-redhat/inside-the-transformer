@@ -834,18 +834,18 @@ model(){
   s += arrow(618, lineY, 648, lineY);
 
   // final norm
-  s += zbox(652, lineY-36, 82, 72, a.norm, 'final', 'norm', 'boxw', 'final');
-  s += arrow(734, lineY, 762, lineY);
-  G.norm = {x0:652, x1:734};
+  s += zbox(652, lineY-36, 94, 72, a.norm, 'final', 'norm', 'boxw', 'final');
+  s += arrow(746, lineY, 774, lineY);
+  G.norm = {x0:652, x1:746};
 
   // lm head
-  s += zbox(766, lineY-42, 96, 84, 'LM head', `${a.d} -> ${a.vocab}`, 'lmhead');
-  s += arrow(862, lineY, 888, lineY);
-  G.head = {x0:766, x1:862};
+  s += zbox(778, lineY-42, 96, 84, 'LM head', `${a.d} -> ${a.vocab}`, 'lmhead');
+  s += arrow(874, lineY, 900, lineY);
+  G.head = {x0:778, x1:874};
 
   // output distribution placeholder
   s += `<g id="outbars">`;
-  const obx = 892, oby = lineY+34;
+  const obx = 904, oby = lineY+34;
   for(let i=0;i<5;i++){
     s += `<rect x="${obx+i*18}" y="${oby-14}" width="12" height="14" rx="2" fill="${C.g20}" data-ob="${i}"/>`;
   }
@@ -889,10 +889,10 @@ block(){
     s += T(30, mainY-10, 't-mono', 'x');
     s += line(96, mainY, 96, 238, 'wire');
     s += arrow(96, 238, 136, 238, 'wire');
-    s += zbox(138, 206, 104, 64, a.norm, 'one norm, two readers', 'norm', 'boxw', 'pre-attn');
-    s += line(242, 238, 282, 238, 'wire');
-    s += line(282, 238, 282, 142, 'wire'); s += arrow(282, 142, 314, 142);
-    s += line(282, 238, 282, 278, 'wire'); s += arrow(282, 278, 314, 278);
+    s += zbox(138, 206, 130, 64, a.norm, 'one norm, two readers', 'norm', 'boxw', 'pre-attn');
+    s += line(268, 238, 296, 238, 'wire');
+    s += line(296, 238, 296, 142, 'wire'); s += arrow(296, 142, 314, 142);
+    s += line(296, 238, 296, 278, 'wire'); s += arrow(296, 278, 314, 278);
     s += zbox(316, 96, 212, 92, `${a.attn} attention`, 'tokens talk to each other', 'attn');
     if(moe) s += zbox(316, 232, 212, 92, 'MoE layer', `top-${a.topk} of ${a.experts} experts`, 'moe');
     else    s += zbox(316, 232, 212, 92, `MLP (${a.actName})`, `${a.d} -> ${a.ffnDim} -> ${a.d}`, 'ffn');
