@@ -1022,11 +1022,11 @@ attn(){
   s += T(36, 44, 't-title', `${titleMap[a.attn]} (${a.attn})`);
 
   if(a.attn==='MLA'){
-    s += T(30, 150, 't-mono', 'x');
+    s += T(61, 150, 't-mono', 'x', 'middle');
     s += arrow(44, 146, 78, 146);
     s += zbox(80, 118, 118, 56, 'W_DQ · W_UQ', 'low-rank Q', 'matmul', 'boxw', 'lowrank');
     s += arrow(198, 146, 250, 146);
-    s += T(30, 260, 't-mono', 'x');
+    s += T(61, 260, 't-mono', 'x', 'middle');
     s += arrow(44, 256, 78, 256);
     s += zbox(80, 228, 118, 56, 'W_DKV', `${a.d} -> ${a.latent}`, 'matmul', 'boxw', 'lowrank');
     s += arrow(198, 256, 246, 230);
@@ -1037,7 +1037,7 @@ attn(){
     const names=['W_q','W_k','W_v'];
     names.forEach((n,i)=>{
       const y = 118 + i*78;
-      s += T(30, y+32, 't-mono', 'x');
+      s += T(61, y+32, 't-mono', 'x', 'middle');
       s += arrow(44, y+28, 78, y+28);
       s += zbox(80, y, 100, 56, n, null, 'matmul', 'boxw', 'wproj');
       s += line(180, y+28, 226, 190, 'wire-p');
@@ -1136,7 +1136,7 @@ ffn(ctx){
   let s = '';
   s += T(36, 44, 't-title', isExpert? 'One expert, a small gated MLP' : `The MLP, where facts live`);
   if(gated){
-    s += T(30, 250, 't-mono', 'x');
+    s += T(44, 250, 't-mono', 'x', 'middle');
     s += line(44, 246, 70, 180, 'wire-p'); s += arrow(70,180,96,180,'wire-p');
     s += line(44, 246, 70, 320, 'wire-p'); s += arrow(70,320,96,320,'wire-p');
     s += zbox(98, 152, 120, 56, 'W_gate', `${din} -> ${dmid}`, 'matmul', 'boxw', 'ffn');
