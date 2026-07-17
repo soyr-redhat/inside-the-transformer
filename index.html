@@ -407,19 +407,12 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
   </div>
 
   <div class="promptwrap">
-    <h3>Run a prompt through the model</h3>
-    <p class="note">Run all tokens at once, or click a token chip (or Step through) to follow a single token through every stage of the model, in depth.</p>
+    <h3>Step through next-token prediction</h3>
+    <p class="note">Click a token chip or press Step through to follow a single token through every stage of the model, in depth.</p>
     <div class="promptrow">
-      <input id="promptin" type="text" value="the red hat sits on the" maxlength="60" aria-label="Sample prompt">
-      <button id="runbtn">Run tokens -></button>
       <button id="stepbtn">Step through</button>
     </div>
     <div class="tokrow" id="tokrow" aria-label="Tokenized prompt"></div>
-    <div id="resultwrap">
-      <h4 id="resulthead">Next-token distribution</h4>
-      <div id="candlist"></div>
-      <p class="resnote">Illustrative probabilities, not a real forward pass. Click a candidate to append it and run again.</p>
-    </div>
   </div>
 </main>
 
@@ -686,7 +679,7 @@ document.addEventListener('keydown', e=>{
   }
   if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
   if(e.key==='c' && typeof cmp!=='undefined'){ cmp.on ? exitCompare() : enterCompare(); }
-  if(e.key==='/'){ e.preventDefault(); document.getElementById('promptin').focus(); }
+  if(e.key==='/'){ e.preventDefault(); startTour(); }
 });
 
 /* depth toggle */
@@ -1423,11 +1416,8 @@ softmax(ctx){
 /* ==================================================================
    TOKEN FLOW
    ================================================================== */
-const promptin = document.getElementById('promptin');
-const runbtn = document.getElementById('runbtn');
+const promptin = {value: 'the red hat sits on the'};
 const tokrow = document.getElementById('tokrow');
-const resultwrap = document.getElementById('resultwrap');
-const candlist = document.getElementById('candlist');
 let flowRAF = null, flowing = false;
 
 function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);} return h>>>0; }
@@ -1453,17 +1443,14 @@ function renderChips(toks){
     tokrow.appendChild(d);
   });
 }
-promptin.addEventListener('input', ()=>{ renderChips(tokenize(promptin.value)); hideResult(); });
-
 function stopFlow(){
   flowing = false;
   if(flowRAF) cancelAnimationFrame(flowRAF);
   flowRAF = null;
-  runbtn.disabled = false;
   document.querySelectorAll('.tokg').forEach(e=>e.remove());
   document.querySelectorAll('.tok.lit').forEach(e=>e.classList.remove('lit'));
 }
-function hideResult(){ resultwrap.classList.remove('show'); }
+function hideResult(){}
 
 const CONTINUATIONS = {
   'the':['table','floor','shelf','head','mat'], 'on':['the','a','top','my','it'],
@@ -1497,7 +1484,7 @@ function startFlow(){
   const G = window.MODEL_GEOM;
   const svg = stage.querySelector('.scene svg');
   if(!G || !svg) return;
-  flowing = true; runbtn.disabled = true;
+  flowing = true;
   const moe = arch.ffn==='moe';
   const reduced = typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1563,9 +1550,8 @@ function startFlow(){
 }
 
 function finishFlow(toks){
-  flowing = false; runbtn.disabled = false;
+  flowing = false;
   const dist = fakeDistribution(toks[toks.length-1]);
-  // in-scene mini bars
   const svg = stage.querySelector('.scene svg');
   if(svg){
     dist.slice(0,5).forEach((d,i)=>{
@@ -1575,26 +1561,7 @@ function finishFlow(toks){
     const pt = svg.querySelector('#predtok');
     if(pt) pt.textContent = `"${dist[0].tok}"  ·  ${(dist[0].p*100).toFixed(0)}%`;
   }
-  // result panel
-  candlist.innerHTML='';
-  document.getElementById('resulthead').textContent = `Next-token distribution, after "${toks.join(' ')}"`;
-  dist.forEach((d,i)=>{
-    const row = document.createElement('div'); row.className='cand';
-    const b = document.createElement('button'); b.className='ctok'; b.textContent = d.tok;
-    b.title = 'append and run again';
-    b.addEventListener('click',()=>{ promptin.value = (promptin.value.trim()+' '+d.tok).trim(); renderChips(tokenize(promptin.value)); runFlow(); });
-    const bar = document.createElement('div'); bar.className='candbar';
-    bar.style.background = PRAMP[4-Math.min(i,4)];
-    bar.style.width = '0%';
-    const pct = document.createElement('span'); pct.className='candpct'; pct.textContent=(d.p*100).toFixed(1)+'%';
-    row.appendChild(b); row.appendChild(bar); row.appendChild(pct);
-    candlist.appendChild(row);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.width = (d.p*100*0.9).toFixed(1)+'%'; }));
-  });
-  resultwrap.classList.add('show');
 }
-runbtn.addEventListener('click', runFlow);
-promptin.addEventListener('keydown', e=>{ if(e.key==='Enter') runFlow(); });
 
 /* ==================================================================
    QUANTIZATION PAGE
@@ -1834,7 +1801,7 @@ function buildTour(tok, pos, n){
   steps.push({path:[S('model'),S('lmhead')],
     text:`"${tok}"'s finished vector, by now a compressed summary of everything up to and including it, is scored against all ${a.vocab} vocabulary entries at once, and softmax turns those scores into next-token probabilities.`});
   steps.push({path:[S('model')],
-    text:`The whole journey. Hit “Run tokens” to watch all ${n} tokens make the trip at once${moe?' and scatter across the experts':''}, or click any outlined block to keep digging on your own.`});
+    text:`The whole journey. Click any token chip to follow a different token, or click any outlined block to keep digging on your own.`});
   return steps;
 }
 
