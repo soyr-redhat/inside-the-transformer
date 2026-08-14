@@ -1556,7 +1556,7 @@ function finishFlow(toks){
    ================================================================== */
 const FORMATS = [
   {id:'fp32', name:'FP32', bytes:4, s:1, e:8, m:23, kind:'float',
-   desc:'Full precision. Legacy training format; almost nobody ships or runs models in it anymore.'},
+   desc:'Full precision. Legacy training format; almost never needed to run a model.'},
   {id:'fp16', name:'FP16', bytes:2, s:1, e:5, m:10, kind:'float',
    desc:'Half precision. The long-standing inference default, half the memory, no visible quality loss.'},
   {id:'bf16', name:'BF16', bytes:2, s:1, e:8, m:7, kind:'float',
