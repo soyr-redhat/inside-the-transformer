@@ -1694,7 +1694,7 @@ function renderSizeSel(){
   });
 }
 const gb = (paramsB, bytes) => paramsB*1e9*bytes/(1024**3);
-function fmtGB(v){ return v>=1024 ? (v/1024).toFixed(2)+' TB' : v>=10 ? v.toFixed(0)+' GB' : v.toFixed(v<1?2:1)+' GB'; }
+function fmtGB(v){ return v>=1024 ? (v/1024).toFixed(2)+' TiB' : v>=10 ? v.toFixed(0)+' GiB' : v.toFixed(v<1?2:1)+' GiB'; }
 function drawSizeBars(){
   const wrap=document.getElementById('szbars');
   const maxGB = gb(curSize.b, 4)*1.06;
