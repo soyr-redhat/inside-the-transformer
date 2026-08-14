@@ -1556,11 +1556,11 @@ function finishFlow(toks){
    ================================================================== */
 const FORMATS = [
   {id:'fp32', name:'FP32', bytes:4, s:1, e:8, m:23, kind:'float',
-   desc:'Full precision. The training default; almost never needed to run a model.'},
+   desc:'Full precision. Legacy training format; almost nobody ships or runs models in it anymore.'},
   {id:'fp16', name:'FP16', bytes:2, s:1, e:5, m:10, kind:'float',
    desc:'Half precision. The long-standing inference default, half the memory, no visible quality loss.'},
   {id:'bf16', name:'BF16', bytes:2, s:1, e:8, m:7, kind:'float',
-   desc:'Same size as FP16 but trades precision for FP32\u2019s full range, much harder to overflow.'},
+   desc:'Same size as FP16 but with FP32\u2019s full range, much harder to overflow. The de facto default for modern training and released checkpoints.'},
   {id:'fp8', name:'FP8 (e4m3)', bytes:1, s:1, e:4, m:3, kind:'float',
    desc:'Quarter precision. DeepSeek-V3 was trained largely in this format on H800s.'},
   {id:'int8', name:'INT8', bytes:1, s:1, i:7, kind:'int', levels:255,
@@ -1645,7 +1645,7 @@ function drawQuantViz(){
   });
   WEIGHTS.forEach(w=> s += `<circle cx="${X(w).toFixed(1)}" cy="${topY}" r="3.2" fill="${C.g40}"/>`);
   qs.forEach(q=> s += `<circle cx="${X(q).toFixed(1)}" cy="${axY}" r="3.6" fill="${C.p50}"/>`);
-  s += `<text x="${x0}" y="${topY-14}" style="font-size:10px" fill="${C.g50}">original (FP32)</text>`;
+  s += `<text x="${x0}" y="${topY-14}" style="font-size:10px" fill="${C.g50}">original (BF16)</text>`;
   s += `<text x="${x0}" y="${axY-14}" style="font-size:10px" fill="${C.p60}">stored as ${curFmt.name}</text>`;
   s += '</svg>';
   quantviz.innerHTML = s;
