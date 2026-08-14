@@ -430,7 +430,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
       </div>
       <div class="qpanel">
         <h3>What happens to the size</h3>
-        <p class="psub">Weight memory only (KV cache and activations come on top).</p>
+        <p class="psub">Weight memory only (KV cache and activations come on top). The top option sizes whatever model you're exploring — paste a config.json to size any model. MoE bars use total weights, not the active subset.</p>
         <div class="szsel" id="szsel" role="group" aria-label="Choose model size"></div>
         <div class="szbars" id="szbars"></div>
       </div>
@@ -454,19 +454,19 @@ const PRAMP = [C.p10,C.p20,C.p30,C.p40,C.p50,C.p60,C.p70];
 
 /* ============ architectures ============ */
 const ARCHS = {
-  gpt2:{ key:'gpt2', name:'GPT-2 small', tag:'MHA · dense', params:'124M',
+  gpt2:{ key:'gpt2', name:'GPT-2 small', tag:'MHA · dense', params:'124M', paramsB:0.124,
     d:768, layers:12, qHeads:12, kvHeads:12, attn:'MHA', ffn:'dense',
     act:'GELU', gated:false, actName:'GELU', norm:'LayerNorm', pos:'learned positions', vocab:'50,257', vocabN:50257, headDim:64, ffnDim:3072,
     features:['context 1,024','tied embeddings'], year:2019, blurb:'the classic decoder-only recipe; every later model is a remix of this' },
-  llama:{ key:'llama', name:'Llama 3 8B', tag:'GQA · dense', params:'8B',
+  llama:{ key:'llama', name:'Llama 3 8B', tag:'GQA · dense', params:'8B', paramsB:8,
     d:4096, layers:32, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'128,256', vocabN:128256, headDim:128, ffnDim:14336,
     features:['context 8,192','RoPE θ 500k'], year:2024, blurb:'the modern dense recipe: RMSNorm, rotary positions, gated MLP, grouped KV' },
-  granite:{ key:'granite', name:'Granite 3.3 8B', tag:'GQA · dense', params:'8B',
+  granite:{ key:'granite', name:'Granite 3.3 8B', tag:'GQA · dense', params:'8B', paramsB:8,
     d:4096, layers:40, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'49,159', vocabN:49159, headDim:128, ffnDim:12800,
     features:['context 128k','tied embeddings','RoPE θ 10M','muP-style multipliers'], year:2025, blurb:'IBM\'s open-weight dense model with muP scaling, designed for enterprise and multilingual use' },
-  dsv3:{ key:'dsv3', name:'DeepSeek-V3', tag:'MLA · MoE', params:'671B total · 37B active',
+  dsv3:{ key:'dsv3', name:'DeepSeek-V3', tag:'MLA · MoE', params:'671B total · 37B active', paramsB:671, activeB:37,
     d:7168, layers:61, qHeads:128, kvHeads:0, attn:'MLA', ffn:'moe',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'decoupled RoPE', vocab:'129,280', vocabN:129280, headDim:128, ffnDim:2048,
     experts:256, topk:8, shared:1, latent:512, ropeDim:64, moeScore:'sigmoid',
@@ -1658,17 +1658,41 @@ const SIZES = [
   {name:'GPT-2 · 0.12B', b:0.124}, {name:'Llama 3 · 8B', b:8},
   {name:'Llama 3 · 70B', b:70}, {name:'DeepSeek-V3 · 671B', b:671}
 ];
-let curSize = SIZES[1];
 const szsel = document.getElementById('szsel');
-SIZES.forEach(m=>{
-  const b=document.createElement('button'); b.textContent=m.name; b.dataset.n=m.name;
-  b.setAttribute('aria-pressed', m===curSize);
-  b.addEventListener('click',()=>{ curSize=m;
-    document.querySelectorAll('.szsel button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.n===m.name));
-    drawSizeBars();
+/* total parameter count (billions) for the currently loaded architecture */
+function archParamsB(a){
+  if(a && a.paramsTotal) return a.paramsTotal/1e9;       // built from a config.json
+  if(a && typeof a.paramsB === 'number') return a.paramsB; // built-in preset
+  return null;
+}
+function fmtParamsB(b){
+  return b>=1 ? (b<10 ? b.toFixed(1) : String(Math.round(b)))+'B' : Math.round(b*1000)+'M';
+}
+/* the "this model" option, rebuilt from `arch` each time the selector renders */
+function currentModelSize(){
+  const b = archParamsB(arch);
+  if(b==null) return null;
+  const activeRaw = arch.ffn==='moe' ? (arch.paramsActive ? arch.paramsActive/1e9 : (arch.activeB ?? null)) : null;
+  const active = (activeRaw!=null && activeRaw < b) ? activeRaw : null;
+  return { name:`${arch.name} · ${fmtParamsB(b)}${active?` (${fmtParamsB(active)} active)`:''}`, b, model:true };
+}
+let curSize = SIZES[1];
+function renderSizeSel(){
+  const model = currentModelSize();
+  const list = model ? [model, ...SIZES] : SIZES.slice();
+  curSize = model || SIZES[1];   // default to the loaded model when we can size it
+  szsel.innerHTML='';
+  list.forEach(m=>{
+    const b=document.createElement('button'); b.textContent=m.name; b.dataset.n=m.name;
+    if(m.model) b.dataset.model='1';
+    b.setAttribute('aria-pressed', m===curSize);
+    b.addEventListener('click',()=>{ curSize=m;
+      szsel.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+      drawSizeBars();
+    });
+    szsel.appendChild(b);
   });
-  szsel.appendChild(b);
-});
+}
 const gb = (paramsB, bytes) => paramsB*1e9*bytes/(1024**3);
 function fmtGB(v){ return v>=1024 ? (v/1024).toFixed(2)+' TB' : v>=10 ? v.toFixed(0)+' GB' : v.toFixed(v<1?2:1)+' GB'; }
 function drawSizeBars(){
@@ -1700,6 +1724,7 @@ function setView(v){
   explorepage.classList.toggle('hiddenpage', q);
   quantpage.classList.toggle('active', q);
   modelbarEl.style.visibility = q? 'hidden' : 'visible';
+  if(q){ renderSizeSel(); drawSizeBars(); }  // reflect the currently loaded model
 }
 vwExplore.addEventListener('click',()=>setView('explore'));
 vwQuant.addEventListener('click',()=>setView('quant'));
@@ -1707,6 +1732,7 @@ vwQuant.addEventListener('click',()=>setView('quant'));
 resetToModel(false);
 renderChips(tokenize(promptin.value));
 drawQuantViz();
+renderSizeSel();
 drawSizeBars();
 
 /* ==================================================================
@@ -2135,6 +2161,7 @@ function buildCustomArch(cfg, label){
   return {
     arch: {
       key:'custom', name:label, tag:`${attn} · ${moe?'MoE':'dense'}`, params,
+      paramsTotal: total, paramsActive: active,
       d, layers, qHeads:q, kvHeads:kv, headDim, attn, ffn:moe?'moe':'dense',
       act, gated, actName, norm, pos, vocab:fmtN(vocabN), vocabN,
       ffnDim:moe?moeFfn:denseFfn, experts, topk, shared, latent:kvLora||0, ropeDim:qkRope||0, moeScore,
