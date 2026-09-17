@@ -4,4 +4,14 @@ An interactive atlas of LLM architectures. Click any outlined block to zoom in a
 
 Also supports importing a model from Hugging Face or any raw config.json file
 
+The diagrams are configuration-grounded educational illustrations. The token
+walkthrough, probability bars, and quantization scatter plot use illustrative
+values; the page does not load model weights or a model-specific tokenizer.
+
+Run the dependency-free audit with:
+
+```sh
+node test/quality-audit.js
+```
+
 **<a href="https://soyr-redhat.github.io/inside-the-transformer/" target="_blank">View it live</a>**

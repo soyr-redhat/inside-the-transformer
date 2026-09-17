@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inside the transformer</title>
+<meta name="description" content="An interactive, configuration-grounded atlas of transformer architectures, attention, MoE routing, and number formats.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -143,6 +144,9 @@ svg .pulse{animation:softpulse 1.6s var(--ease) infinite}
 .depthtoggle button{padding:3px 12px;border-radius:12px;font-size:11.5px;font-weight:600;color:var(--g60);transition:all .2s var(--ease)}
 .depthtoggle button[aria-pressed="true"]{background:var(--white);color:var(--p60);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 #descplain{color:var(--g70);font-size:14.5px;max-width:70ch}
+#sourcenote{font-size:11px;color:var(--g50);margin-top:10px}
+#sourcenote a{color:var(--p60);text-decoration:underline;text-underline-offset:2px}
+#sourcenote a:hover{color:var(--p50)}
 #descmath{font-family:var(--mono);font-size:12.5px;color:var(--g70);background:var(--g10);
   border-left:3px solid var(--p40);padding:12px 16px;margin-top:10px;border-radius:0 6px 6px 0;
   white-space:pre-wrap;line-height:1.7;overflow-x:auto}
@@ -313,8 +317,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
     <small>an interactive atlas of LLM architectures. Click any outlined block to zoom in</small>
   </h1>
   <div class="viewswitch" role="tablist" aria-label="Page view">
-    <button id="vw-explore" aria-pressed="true">Explore architectures</button>
-    <button id="vw-quant" aria-pressed="false">Quantization</button>
+    <button id="vw-explore" role="tab" aria-selected="true" aria-pressed="true">Explore architectures</button>
+    <button id="vw-quant" role="tab" aria-selected="false" aria-pressed="false">Quantization</button>
   </div>
 </header>
 
@@ -391,23 +395,24 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
       </div>
     </div>
     <p id="descplain"></p>
+    <p id="sourcenote"></p>
     <div id="descmath"></div>
   </div>
 
   <div class="promptwrap">
-    <h3>Step through next-token prediction</h3>
-    <p class="note">Click a token chip or press Step through to follow a single token through every stage of the model, in depth.</p>
+    <h3>Step through an illustrative next-token path</h3>
+    <p class="note">Click a token chip or press Step through to follow a single token through every stage. Token segments, scores, and percentages are illustrative; this page does not load model weights or a model tokenizer.</p>
     <div class="promptrow">
       <button id="stepbtn">Step through</button>
     </div>
-    <div class="tokrow" id="tokrow" aria-label="Tokenized prompt"></div>
+    <div class="tokrow" id="tokrow" aria-label="Illustrative token segments"></div>
   </div>
 </main>
 
 <main id="quantpage">
   <section class="qsection" style="margin-top:18px">
     <h2>Number formats</h2>
-    <p class="sub">Every weight in a model is just a number stored in bits. Fewer bits means a smaller, faster model, and a coarser grid of representable values. Select a format to see its effect below.</p>
+    <p class="sub">Every weight in a model is stored in a numeric format. Fewer bits usually means less weight memory; speed depends on hardware and kernels, while quality depends on the quantization method. Select a format to see the trade-offs below.</p>
     <div class="fmtgrid" id="fmtgrid"></div>
     <div class="bitlegend">
       <span><span class="swatch" style="background:var(--g95)"></span>sign (S)</span>
@@ -421,7 +426,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
     <div class="qtwo">
       <div class="qpanel">
         <h3>What happens to the weights</h3>
-        <p class="psub">64 real weights from one layer, snapped to the selected format's grid. Gray dots are the originals; purple dots are what actually gets stored.</p>
+        <p class="psub">64 illustrative weights, snapped to the selected format's grid. Gray dots are the originals; purple dots are the stored approximations.</p>
         <div id="quantviz"></div>
         <div class="qstats">
           <div class="qstat"><div class="l">Distinct levels</div><div class="v" id="qlevels">-</div><div class="c">values the format can represent here</div></div>
@@ -438,7 +443,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 32px 40px;font-size:11px;color:v
   </section>
 </main>
 
-<footer>Educational illustration. Layer counts and dimensions follow each model's published configuration; diagrams are simplified for clarity.</footer>
+<footer>Educational illustration. Built-in dimensions follow published configurations; diagrams, token flow, probabilities, and quantization samples are simplified for clarity.</footer>
 
 <script>
 'use strict';
@@ -457,21 +462,25 @@ const ARCHS = {
   gpt2:{ key:'gpt2', name:'GPT-2 small', tag:'MHA · dense', params:'124M', paramsB:0.124,
     d:768, layers:12, qHeads:12, kvHeads:12, attn:'MHA', ffn:'dense',
     act:'GELU', gated:false, actName:'GELU', norm:'LayerNorm', pos:'learned positions', vocab:'50,257', vocabN:50257, headDim:64, ffnDim:3072,
-    features:['context 1,024','tied embeddings'], year:2019, blurb:'the classic decoder-only recipe; every later model is a remix of this' },
+    features:['context 1,024','tied embeddings'], year:2019, blurb:'the classic decoder-only recipe that established the modern baseline',
+    sources:[{label:'config.json',url:'https://huggingface.co/openai-community/gpt2/blob/main/config.json'}] },
   llama:{ key:'llama', name:'Llama 3 8B', tag:'GQA · dense', params:'8B', paramsB:8,
     d:4096, layers:32, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'128,256', vocabN:128256, headDim:128, ffnDim:14336,
-    features:['context 8,192','RoPE θ 500k'], year:2024, blurb:'the modern dense recipe: RMSNorm, rotary positions, gated MLP, grouped KV' },
+    features:['context 8,192','RoPE θ 500k'], year:2024, blurb:'a modern dense recipe: RMSNorm, rotary positions, gated MLP, grouped KV',
+    sources:[{label:'config.json',url:'https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/config.json'}] },
   granite:{ key:'granite', name:'Granite 3.3 8B', tag:'GQA · dense', params:'8B', paramsB:8,
     d:4096, layers:40, qHeads:32, kvHeads:8, attn:'GQA', ffn:'dense',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'RoPE', vocab:'49,159', vocabN:49159, headDim:128, ffnDim:12800,
-    features:['context 128k','tied embeddings','RoPE θ 10M','muP-style multipliers'], year:2025, blurb:'IBM\'s open-weight dense model with muP scaling, designed for enterprise and multilingual use' },
+    features:['context 128k','tied embeddings','RoPE θ 10M','muP-style multipliers'], year:2025, blurb:'IBM\'s open-weight dense model with muP scaling and multilingual support',
+    sources:[{label:'config.json',url:'https://huggingface.co/ibm-granite/granite-3.3-8b-instruct/blob/main/config.json'}] },
   dsv3:{ key:'dsv3', name:'DeepSeek-V3', tag:'MLA · MoE', params:'671B total · 37B active', paramsB:671, activeB:37,
     d:7168, layers:61, qHeads:128, kvHeads:0, attn:'MLA', ffn:'moe',
     act:'SiLU', gated:true, actName:'SwiGLU', norm:'RMSNorm', pos:'decoupled RoPE', vocab:'129,280', vocabN:129280, headDim:128, ffnDim:2048,
     experts:256, topk:8, shared:1, latent:512, ropeDim:64, moeScore:'sigmoid',
     features:['context 128k','sigmoid gate','grouped routing 8g · top-4','first 3 layers dense','MTP x1'],
-    attnNotes:['decoupled RoPE: a 64-dim rotary slice rides beside the compressed latent to carry position'], year:2024, blurb:'sparse mixture-of-experts with compressed-latent attention: huge capacity, small forward pass' }
+    attnNotes:['decoupled RoPE: a 64-dim rotary slice rides beside the compressed latent to carry position'], year:2024, blurb:'sparse mixture-of-experts with compressed-latent attention: large capacity, smaller active compute',
+    sources:[{label:'model card',url:'https://huggingface.co/deepseek-ai/DeepSeek-V3'},{label:'config.json',url:'https://huggingface.co/deepseek-ai/DeepSeek-V3/blob/main/config.json'}] }
 };
 const ARCH_ORDER = ['gpt2','llama','granite','dsv3'];
 let arch = ARCHS.gpt2;
@@ -632,8 +641,30 @@ const backbtn = document.getElementById('backbtn');
 const descwrap = document.getElementById('descwrap');
 const desctitle = document.getElementById('desctitle');
 const descplain = document.getElementById('descplain');
+const sourcenote = document.getElementById('sourcenote');
 const descmath = document.getElementById('descmath');
 const depthlabel = document.getElementById('depthlabel');
+
+function safeSourceUrl(url){
+  try{
+    const parsed = new URL(url, window.location.href);
+    return /^https?:$/.test(parsed.protocol) ? parsed.href : null;
+  }catch(e){ return null; }
+}
+
+function renderSourceNote(a){
+  const links = (a.sources||[]).map(source=>{
+    const url = safeSourceUrl(source.url);
+    return url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(source.label)}</a>` : null;
+  }).filter(Boolean);
+  if(links.length){
+    sourcenote.innerHTML = `Sources for the displayed configuration: ${links.join(' · ')}`;
+  } else if(a.key==='custom') {
+    sourcenote.textContent = 'Custom configuration: fields are read from the supplied config.json; inferred fields are reported in the config panel.';
+  } else {
+    sourcenote.textContent = '';
+  }
+}
 
 function updateChrome(meta){
   // breadcrumb
@@ -654,6 +685,7 @@ function updateChrome(meta){
   // description
   desctitle.textContent = meta.title;
   descplain.textContent = meta.plain;
+  renderSourceNote(arch);
   descmath.textContent = meta.math || 'No extra math at this level. Dive deeper.';
   [desctitle,descplain,descmath].forEach(el=>{ el.classList.remove('desc-fade'); void el.offsetWidth; el.classList.add('desc-fade'); });
 }
@@ -706,11 +738,38 @@ function setArch(k){
    ================================================================== */
 
 /* ---------- head-sharing panel used by all attention scenes ---------- */
+function mlaCacheInfo(a){
+  const latent = Number(a.latent) || 0;
+  const rotary = Number(a.ropeDim) || 0;
+  const parts = rotary ? `${latent}-dim latent plus ${rotary}-dim rotary key` : `${latent}-dim latent`;
+  return {
+    latent,
+    rotary,
+    total: latent + rotary,
+    label: parts,
+    math: rotary
+      ? `c_KV = x · W_DKV ∈ ℝ^${latent}       (cached)\nk_R = RoPE(x · W_KR) ∈ ℝ^${rotary}  (cached)\nK, V = expand(c_KV)                  (recomputed)`
+      : `c_KV = x · W_DKV ∈ ℝ^${latent}       (cached)\nK, V = expand(c_KV)                  (recomputed)`
+  };
+}
+
+function routerGateInfo(a){
+  const sigmoid = a.moeScore === 'sigmoid';
+  return {
+    operation: sigmoid ? 'sigmoid' : 'softmax',
+    sub: sigmoid ? 'independent scores' : `over the ${a.topk} kept`,
+    tour: sigmoid
+      ? `sigmoid-score each expert, keep ${a.topk}, then renormalize the survivors`
+      : `softmax the ${a.topk} survivors`
+  };
+}
+
 function headPanel(x, y, opts){
   // opts: {qShown, qTotal, kvShown, kvTotal, groupSize} or {mla:true}
   let s = '';
   const sq = 26, gap = 8;
   if(opts.mla){
+    const cache = mlaCacheInfo(arch);
     const qn = 8;
     for(let i=0;i<qn;i++){
       const qx = x + i*(sq+gap);
@@ -719,15 +778,15 @@ function headPanel(x, y, opts){
     }
     s += T(x + qn*(sq+gap) + 6, y+17, 't-cap', `× ${arch.qHeads} query heads`);
     const lw = qn*(sq+gap)-gap;
-    s += rect(x, y+92, lw, 26, '', 5, `fill="${C.p30}" stroke="${C.p50}" stroke-width="1.25"`);
-    s += T(x+lw/2, y+109, 't-lbl', `compressed latent  c  (${arch.latent} dims)`, 'middle');
-    s += T(x+lw+6, y+109, 't-cap', '<- cached');
-    s += arrow(x+lw/2-60, y+118, x+lw/2-60, y+152, 'wire-p');
-    s += arrow(x+lw/2+60, y+118, x+lw/2+60, y+152, 'wire-p');
-    s += rect(x+lw/2-110, y+152, 100, 26, '', 4, `fill="${C.p10}" stroke="${C.p30}"`);
-    s += T(x+lw/2-60, y+169, 't-sub', 'K re-expanded', 'middle');
-    s += rect(x+lw/2+10, y+152, 100, 26, '', 4, `fill="${C.p10}" stroke="${C.p30}"`);
-    s += T(x+lw/2+60, y+169, 't-sub', 'V re-expanded', 'middle');
+    s += rect(x, y+92, lw, 38, '', 5, `fill="${C.p30}" stroke="${C.p50}" stroke-width="1.25"`);
+    s += T(x+lw/2, y+108, 't-lbl', `compressed latent  c  (${cache.latent} dims)`, 'middle');
+    s += T(x+lw/2, y+123, 't-sub', cache.rotary ? `+ rotary key kᵣ  (${cache.rotary} dims), cached` : 'cached', 'middle');
+    s += arrow(x+lw/2-60, y+130, x+lw/2-60, y+154, 'wire-p');
+    s += arrow(x+lw/2+60, y+130, x+lw/2+60, y+154, 'wire-p');
+    s += rect(x+lw/2-110, y+154, 100, 26, '', 4, `fill="${C.p10}" stroke="${C.p30}"`);
+    s += T(x+lw/2-60, y+171, 't-sub', 'K re-expanded', 'middle');
+    s += rect(x+lw/2+10, y+154, 100, 26, '', 4, `fill="${C.p10}" stroke="${C.p30}"`);
+    s += T(x+lw/2+60, y+171, 't-sub', 'V re-expanded', 'middle');
     return s;
   }
   const {qShown, qTotal, kvShown, kvTotal, groupSize} = opts;
@@ -831,7 +890,7 @@ model(){
     s += `<rect x="${obx+i*18}" y="${oby-14}" width="12" height="14" rx="2" fill="${C.g20}" data-ob="${i}"/>`;
   }
   s += `</g>`;
-  s += T(obx, lineY-52, 't-lbl', 'next token');
+  s += T(obx, lineY-52, 't-lbl', 'illustrative next token');
   s += `<text x="${obx}" y="${lineY-34}" class="t-mono-p" id="predtok"></text>`;
   s += T(obx, oby+16, 't-sub', 'probabilities');
   G.out = {x:obx+8, y:lineY};
@@ -846,7 +905,7 @@ model(){
   }
 
   window.MODEL_GEOM = G;
-  const plainMoe = `Only a fraction of the network runs for any given token: each block routes it to ${a.topk} of ${a.experts} specialist FFNs${a.shared?' (plus '+a.shared+' shared)':''}. That is how it can store far more parameters than it spends per token (${a.params}).`;
+  const plainMoe = `Only a fraction of the routed network runs for any given token: each block sends it to ${a.topk} of ${a.experts} specialist FFNs${a.shared?' (plus '+a.shared+' shared)':''}. That lets the model hold more parameters than the per-token routed computation would require in a dense design (${a.params}).`;
   const plainDense = `Every parameter participates in every token, that is what “dense” means.`;
   return { svg:s,
     title:`${a.name}, the whole model`, crumb:a.name,
@@ -884,7 +943,7 @@ block(){
     s += T(316, 344, 't-cap', 'both outputs land on the stream at the same junction');
     return { svg:s,
       title:'Inside a block (parallel form)', crumb:'block',
-      plain:`This model uses the parallel block: a single ${a.norm} feeds both sublayers at once. Attention and the ${moe?'MoE layer':'MLP'} read the same normalized input side by side, and their outputs are added onto the residual stream together. One fewer norm per block and better kernel overlap, with quality that held up at scale.`,
+      plain:`This model uses the parallel block: a single ${a.norm} feeds both sublayers at once. Attention and the ${moe?'MoE layer':'MLP'} read the same normalized input side by side, and their outputs are added onto the residual stream together. This changes the normalization and scheduling trade-offs, and can improve kernel overlap for some implementations.`,
       math:`y = x + ${a.attn}(${a.norm}(x)) + ${moe?'MoE':'MLP'}(${a.norm}(x))`
     };
   }
@@ -941,7 +1000,7 @@ embed(){
   mg += `<text x="${196+210-7}" y="135" class="zoomglyph" text-anchor="end">+</text>`;
   s += `<g class="clk" data-zoom="matmul" data-ctx="lookup" tabindex="0" role="button" aria-label="embedding matrix, zoom in">${mg}</g>`;
   s += T(301, 328, 't-sub', `E, ${a.vocab} rows × ${a.d} dims`, 'middle');
-  s += T(301, 105, 't-cap', 'pick row 5269', 'middle');
+  s += T(301, 105, 't-cap', 'pick a vocabulary row', 'middle');
   s += arrow(406, 215, 460, 215);
   // output vector
   s += matglyph(464, 202, 130, 26, 1, 10, C.p40);
@@ -961,7 +1020,7 @@ embed(){
   }
   return { svg:s,
     title:'Embedding', crumb:'embedding',
-    plain:`The embedding is a giant lookup table with one learned row per vocabulary entry. A token id just selects its row, no arithmetic yet. ${learned? 'GPT-2 also keeps a second table of position vectors and adds row [pos], so “hat” at position 1 and position 7 enter the network as different vectors.' : 'Position information is injected later: RoPE rotates the query and key vectors inside every attention layer, so the embedding itself is position-free.'}`,
+    plain:`The embedding is a giant lookup table with one learned row per vocabulary entry. A token id selects its row, no arithmetic is needed for the lookup itself. ${learned? 'GPT-2 also keeps a second table of position vectors and adds row [pos], so the same token at different positions enters the network as a different vector.' : 'Position information is injected later: RoPE rotates the query and key vectors inside every attention layer, so the embedding itself is position-free.'}`,
     math:`x = E[id]${learned?' + P[pos]':''}        E ∈ ℝ^(${a.vocab} × ${a.d})\nequivalently: x = onehot(id) · E   (a very sparse matmul)`
   };
 },
@@ -1040,9 +1099,10 @@ attn(){
 
   // KV cache note
   const hd = a.headDim || Math.round(a.d/a.qHeads);
-  const mlaCache = a.latent + (a.ropeDim||0);
+  const mlaCacheInfoForArch = a.attn==='MLA' ? mlaCacheInfo(a) : null;
+  const mlaCache = mlaCacheInfoForArch ? mlaCacheInfoForArch.total : 0;
   const cacheNote = a.attn==='MLA'
-    ? `KV cache per token per layer: ${a.latent}${a.ropeDim?' + '+a.ropeDim+' (rotary key)':''} = ${mlaCache} numbers, vs ${2*a.qHeads*hd} for per-head K/V (${Math.round(2*a.qHeads*hd/mlaCache)}x smaller)`
+    ? `KV cache per token per layer: ${mlaCacheInfoForArch.label} = ${mlaCache} numbers, vs ${2*a.qHeads*hd} for per-head K/V (${Math.round(2*a.qHeads*hd/mlaCache)}x smaller)`
     : `KV cache per token per layer: 2 x ${a.kvHeads} x ${hd} = ${2*a.kvHeads*hd} numbers` +
       (a.kvHeads<a.qHeads ? `, ${Math.round(a.qHeads/a.kvHeads)}x smaller than full per-head K/V` : '');
   s += rect(36, 420, 560, 34, '', 5, `fill="${C.g10}"`);
@@ -1053,15 +1113,15 @@ attn(){
 
   const plains = {
     MHA:`Every one of the ${a.qHeads} heads gets its own private query, key and value projection: maximum flexibility, maximum memory. During generation the K and V of every past token must be cached, and with per-head K/V that cache grows fast.`,
-    GQA:`${a.qHeads} query heads, but only ${a.kvHeads} key/value heads: each group of ${a.qHeads/a.kvHeads} queries shares one K/V pair. Nearly all of MHA's quality, with a KV cache ${Math.round(a.qHeads/a.kvHeads)}x smaller. This is why nearly every modern dense model uses it.`,
-    MQA:`The extreme end of sharing: all ${a.qHeads} query heads read from one single key/value head. The KV cache shrinks by ${a.qHeads}x, which made long-context serving practical on early hardware, at a small quality cost that GQA later recovered.`,
-    MLA:`Instead of sharing K/V heads, MLA compresses them away entirely: x is projected down to a ${a.latent}-dim latent, and full K and V are re-expanded from it on the fly. Only the tiny latent is cached, smaller than even MQA, but with per-head expressiveness closer to full MHA.`
+    GQA:`${a.qHeads} query heads, but only ${a.kvHeads} key/value heads: each group of ${a.qHeads/a.kvHeads} queries shares one K/V pair. This can retain much of MHA's representational capacity while making the KV cache ${Math.round(a.qHeads/a.kvHeads)}x smaller. Many modern dense models use this trade-off.`,
+    MQA:`The extreme end of sharing: all ${a.qHeads} query heads read from one single key/value head. The KV cache shrinks by ${a.qHeads}x, a useful memory saving that can come with a quality trade-off; GQA offers a less aggressive form of sharing.`,
+    MLA:`Instead of storing a full K/V vector for every head, MLA caches a ${mlaCacheInfo(a).label}. Full K and V are re-expanded from the cached state when needed, while the decoupled rotary key preserves positional information. This reduces cache storage while retaining a richer attention representation than a single shared K/V head.`
   };
   const maths = {
     MHA:`headᵢ = SDPA(x·W_qᵢ, x·W_kᵢ, x·W_vᵢ)    i = 1…${a.qHeads}\nout = concat(head₁…head_${a.qHeads}) · W_o`,
     GQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k_g(i), x·W_v_g(i))\ng(i) = ⌈i / ${a.qHeads/a.kvHeads}⌉ -> ${a.kvHeads} K/V groups`,
     MQA:`headᵢ = SDPA(x·W_qᵢ, x·W_k, x·W_v)    (one shared W_k, W_v)`,
-    MLA:`c = x·W_DKV ∈ ℝ^${a.latent}        (cached)\nK = c·W_UK,  V = c·W_UV      (recomputed per step)\nQ = (x·W_DQ)·W_UQ            (low-rank too)`
+    MLA:mlaCacheInfo(a).math + `\nQ = (x·W_DQ)·W_UQ            (low-rank too)`
   };
   return { svg:s, title:titleMap[a.attn], crumb:'attention', plain:plains[a.attn], math:maths[a.attn] };
 },
@@ -1115,7 +1175,7 @@ ffn(ctx){
   const din = a.d, dmid = isExpert? a.ffnDim : a.ffnDim;
   const gated = !!a.gated;
   let s = '';
-  s += T(36, 44, 't-title', isExpert? 'One expert, a small gated MLP' : `The MLP, where facts live`);
+  s += T(36, 44, 't-title', isExpert? 'One expert, a small gated MLP' : `The MLP, a learned feature transform`);
   if(gated){
     s += T(44, 250, 't-mono', 'x', 'middle');
     s += line(44, 246, 70, 180, 'wire-p'); s += arrow(70,180,96,180,'wire-p');
@@ -1143,7 +1203,7 @@ ffn(ctx){
     s += arrow(576, 250, 626, 250);
     s += T(634, 254, 't-mono', '-> back to stream');
   }
-  const share = isExpert? '' : ' Roughly two thirds of the model\u2019s parameters sit in these MLPs; interpretability work keeps finding that this is where factual associations are stored.';
+  const share = isExpert? '' : ' A large fraction of many transformers\u2019 parameters sits in these MLPs; they can encode useful features and associations, but no single sublayer is the complete location of a model\u2019s facts.';
   return { svg:s,
     title: isExpert? 'One expert' : 'The MLP', crumb: isExpert? 'expert' : 'MLP',
     plain: (isExpert
@@ -1166,7 +1226,8 @@ moe(){
   s += arrow(210, 250, 252, 250);
   // expert grid 4x4
   const gx=256, gy=140, ew=64, eh=48, gapx=12, gapy=12;
-  const chosen = [1,6,9,12,3,14,7,10].slice(0, 4); // visually highlight a few
+  const shown = Math.min(a.topk, 4);
+  const chosen = [1,6,9,12,3,14,7,10].slice(0, shown); // representative subset; the full expert count is shown in the label
   let idx=0;
   for(let r=0;r<4;r++)for(let c2=0;c2<4;c2++){
     const x=gx+c2*(ew+gapx), y=gy+r*(eh+gapy);
@@ -1176,7 +1237,7 @@ moe(){
     s += `<g class="clk" data-zoom="ffn" data-ctx="expert" tabindex="0" role="button" aria-label="expert ${idx+1}, zoom in">${inner}</g>`;
     idx++;
   }
-  s += T(gx+ (4*(ew+gapx)-gapx)/2, gy+4*(eh+gapy)+8, 't-sub', `… × ${a.experts} routed experts, ${a.topk} light up per token`, 'middle');
+  s += T(gx+ (4*(ew+gapx)-gapx)/2, gy+4*(eh+gapy)+8, 't-sub', `… × ${a.experts} routed experts, ${a.topk} selected per token (${shown} shown)`, 'middle');
   // shared expert (if this architecture has one)
   if(a.shared){
     const shx=gx, shy=gy+4*(eh+gapy)+26;
@@ -1194,7 +1255,7 @@ moe(){
   s += T(716, 166, 't-lbl', 'why bother?');
   s += T(716, 188, 't-cap', a.params);
   s += T(716, 206, 't-cap', `${a.topk} routed${a.shared?' + '+a.shared+' shared':''} experts run per token`);
-  s += T(716, 224, 't-cap', 'knowledge of a giant, cost of a mid-size');
+  s += T(716, 224, 't-cap', 'capacity of a giant, routed compute of a mid-size');
   return { svg:s,
     title:'Mixture of experts', crumb:'MoE layer',
     plain:`The dense MLP is replaced by ${a.experts} smaller ones, and a tiny router decides which ${a.topk} see each token.${a.shared?' A shared expert always runs, catching common patterns so the routed ones can specialize.':''} Different tokens in the same sentence genuinely take different paths. Run the token flow on the model view to watch it happen.`,
@@ -1213,7 +1274,8 @@ router(){
   s += arrow(210, 250, 254, 250);
   // score bars, top-k highlighted
   const heights=[18,42,9,30,55,14,24,48,11,36,20,50,15,28,8,40];
-  const topSet = new Set([...heights].map((h,i)=>[h,i]).sort((x,y)=>y[0]-x[0]).slice(0,8).map(p=>p[1]));
+  const shownTopK = Math.min(a.topk, heights.length);
+  const topSet = new Set([...heights].map((h,i)=>[h,i]).sort((x,y)=>y[0]-x[0]).slice(0,shownTopK).map(p=>p[1]));
   heights.forEach((h,i)=>{
     const x = 258+i*24;
     s += `<rect x="${x}" y="${300-h}" width="16" height="${h}" rx="2" fill="${topSet.has(i)?C.p50:C.g30}"/>`;
@@ -1222,13 +1284,14 @@ router(){
   s += line(254, 301, 258+16*24, 301, 'wire');
   s += T(258, 326, 't-cap', `one score per expert (${a.experts} total, 16 drawn), keep the top ${a.topk}, drop the rest`);
   s += arrow(650, 250, 694, 250);
-  s += zbox(698, 218, 118, 64, 'softmax', `over the ${a.topk} kept`, 'softmax', 'boxw', 'router');
+  const gate = routerGateInfo(a);
+  s += zbox(698, 218, 118, 64, gate.operation, gate.sub, gate.operation==='softmax'?'softmax':'router', 'boxw', 'router');
   s += arrow(816, 250, 856, 250);
   s += T(862, 244, 't-mono', 'gate weights');
-  s += T(862, 262, 't-mono', 'g₁ … g₈');
+  s += T(862, 262, 't-mono', `g₁ … g₍${a.topk}₎`);
   return { svg:s,
     title:'Expert router', crumb:'router',
-    plain:`One small matrix multiply produces a score for every expert; the top ${a.topk} survive and their scores become mixing weights.${a.moeScore==='sigmoid'?' This model scores each expert with an independent sigmoid (V3-style) rather than a softmax across all of them, then renormalizes the kept gates.':''} Because it's a hard top-k, most of the network's weights stay untouched for this token. Keeping the experts evenly loaded is its own research problem; V3-style models nudge scores with a learned bias instead of an auxiliary loss.`,
+    plain:`One small matrix multiply produces a score for every expert; the top ${a.topk} survive and their scores become mixing weights.${a.moeScore==='sigmoid'?' This model scores each expert with an independent sigmoid rather than a softmax across all experts, then renormalizes the kept gates.':''} Because it's a hard top-k, most of the routed network's weights stay untouched for this token. Keeping experts evenly loaded is its own systems and training problem.`,
     math:`s = ${a.moeScore==='sigmoid'?'σ(x · W_r)':'x · W_r'} ∈ ℝ^${a.experts}\nselect top-${a.topk} by (s + b)    b = balancing bias, selection only\ng = ${a.moeScore==='sigmoid'?'s_kept / Σ s_kept   (gates use the raw scores)':'softmax(s_kept)   (gates use the raw scores)'}`
   };
 },
@@ -1247,12 +1310,12 @@ norm(ctx){
   s += T(402, 233, 't-sub', a.norm, 'middle');
   after.forEach((h,i)=> s += `<rect x="${450+i*30}" y="${300-h}" width="20" height="${h}" rx="2" fill="${C.p50}"/>`);
   s += line(446, 301, 450+8*30, 301, 'wire');
-  s += T(562, 330, 't-sub', 'same direction, unit scale', 'middle');
+  s += T(562, 330, 't-sub', 'predictably scaled output', 'middle');
   s += T(100, 400, 't-cap', ctx==='final' ? 'this final copy runs once more before the LM head, so logits start from a stable scale' : (a.postNorm ? 'this model applies its norms after each sublayer instead of before (post-norm variant, OLMo-2 style)' : 'runs before each sublayer (pre-norm): the sublayer sees a clean input while the raw residual flows past untouched'));
   return { svg:s,
     title:a.norm, crumb:a.norm,
     plain: isRMS
-      ? 'RMSNorm rescales each token\u2019s vector to unit root-mean-square, then multiplies by a learned per-dimension gain. It skips LayerNorm\u2019s mean-subtraction and bias entirely; it is measurably cheaper and quality does not drop. Nearly every post-2022 model made this swap.'
+      ? 'RMSNorm divides each token\u2019s vector by its root-mean-square, then applies a learned per-dimension gain. It skips LayerNorm\u2019s mean-subtraction and bias, making it a cheaper alternative used by many modern decoder models; the learned gain means the output is not literally unit-normalized.'
       : 'LayerNorm re-centers each token\u2019s vector to mean 0, rescales it to variance 1, then applies a learned gain and bias. Without it, activations drift in scale as they pass through dozens of layers and training destabilizes.',
     math: isRMS
       ? 'RMSNorm(x) = γ ⊙ x / RMS(x)\nRMS(x) = √( mean(x²) + ε )'
@@ -1313,10 +1376,10 @@ add(){
   s += matglyph(680, 200, 200, 30, 1, 10, C.p50);
   s += T(780, 254, 't-sub', 'refined stream', 'middle');
   s += T(120, 340, 't-cap', 'each sublayer only nudges the vector, nothing is ever overwritten. Gradients flow straight through the “+” untouched,');
-  s += T(120, 358, 't-cap', `which is the single trick that lets networks ${arch.layers} layers deep actually train.`);
+  s += T(120, 358, 't-cap', `one of the key design choices that helps networks ${arch.layers} layers deep optimize.`);
   return { svg:s,
     title:'Residual connection', crumb:'add',
-    plain:'The simplest operation in the model and arguably the most important. Instead of replacing the token\u2019s vector, every sublayer adds a correction to it. The untouched path gives gradients a direct route from the loss back to layer one, and lets each layer learn a small refinement rather than the whole function.',
+    plain:'The simplest operation in the model and one of the most important. Instead of replacing the token\u2019s vector, every sublayer adds a correction to it. The skip path gives gradients a direct route from the loss back through the network, and lets each layer learn a refinement rather than the whole function.',
     math:'y = x + f(x)\n∂y/∂x = I + ∂f/∂x    (the identity term never vanishes)'
   };
 },
@@ -1336,7 +1399,7 @@ matmul(ctx){
   };
   const L = labels[ctx] || labels.wproj;
   s += T(36, 44, 't-title', 'Matrix multiplication, the atom');
-  s += T(36, 64, 't-cap', 'over 95% of an LLM\u2019s compute is exactly this operation, tiled onto GPU tensor cores');
+  s += T(36, 64, 't-cap', 'most floating-point work in a dense transformer is built from matmuls, tiled onto GPU tensor cores');
   // A
   s += matglyph(90, 150, 168, 112, 4, 6, C.p20, null, [[1,0],[1,1],[1,2],[1,3],[1,4],[1,5]]);
   s += T(174, 282, 't-sub', L.a, 'middle');
@@ -1410,14 +1473,21 @@ let flowRAF = null, flowing = false;
 
 function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);} return h>>>0; }
 
+function illustrativeTokenSegments(word){
+  const w = String(word);
+  if(w.length<=7) return [w];
+  const parts = [w.slice(0,4)];
+  for(let i=4;i<w.length;i+=3) parts.push('##'+w.slice(i,i+3));
+  return parts;
+}
+
 function tokenize(text){
   const raw = text.toLowerCase().match(/[a-z0-9']+|[^\sa-z0-9']/g) || [];
   const toks = [];
   raw.forEach(w=>{
-    if(w.length>7){ toks.push(w.slice(0,4)); toks.push('##'+w.slice(4,10)); }
-    else toks.push(w);
+    toks.push(...illustrativeTokenSegments(w));
   });
-  return toks.slice(0,8);
+  return toks;
 }
 
 function renderChips(toks){
@@ -1425,7 +1495,7 @@ function renderChips(toks){
   toks.forEach((t,i)=>{
     const d=document.createElement('span'); d.className='tok'; d.textContent=t;
     d.setAttribute('role','button'); d.tabIndex=0;
-    d.title = 'follow this token step by step';
+    d.title = 'follow this illustrative token segment step by step';
     d.addEventListener('click', ()=>startTour(t,i));
     d.addEventListener('keydown', e=>{ if(e.key==='Enter') startTour(t,i); });
     tokrow.appendChild(d);
@@ -1547,7 +1617,7 @@ function finishFlow(toks){
       if(r){ const h = Math.max(4, d.p*90); r.setAttribute('height',h); r.setAttribute('y', window.MODEL_GEOM.lineY+34-14-(h-14)); r.setAttribute('fill', PRAMP[4-i]); }
     });
     const pt = svg.querySelector('#predtok');
-    if(pt) pt.textContent = `"${dist[0].tok}"  ·  ${(dist[0].p*100).toFixed(0)}%`;
+    if(pt) pt.textContent = `toy: "${dist[0].tok}"  ·  ${(dist[0].p*100).toFixed(0)}%`;
   }
 }
 
@@ -1556,17 +1626,17 @@ function finishFlow(toks){
    ================================================================== */
 const FORMATS = [
   {id:'fp32', name:'FP32', bytes:4, s:1, e:8, m:23, kind:'float',
-   desc:'Full precision. Legacy training format; almost never needed to run a model.'},
+   desc:'32-bit floating point. A useful reference format and common in training, though inference often uses a smaller format.'},
   {id:'fp16', name:'FP16', bytes:2, s:1, e:5, m:10, kind:'float',
-   desc:'Half precision. The long-standing inference default, half the memory, no visible quality loss.'},
+   desc:'16-bit floating point. Common for inference and half the weight storage of FP32, but quality depends on the model and workflow.'},
   {id:'bf16', name:'BF16', bytes:2, s:1, e:8, m:7, kind:'float',
-   desc:'Same size as FP16 but with FP32\u2019s full range, much harder to overflow. The de facto default for modern training and released checkpoints.'},
+   desc:'16-bit floating point with FP32-like exponent range, so it is harder to overflow than FP16. Common in modern training and checkpoints.'},
   {id:'fp8', name:'FP8 (e4m3)', bytes:1, s:1, e:4, m:3, kind:'float',
-   desc:'Quarter precision. DeepSeek-V3 was trained largely in this format on H800s.'},
+   desc:'8-bit floating point. DeepSeek-V3\u2019s published recipe uses FP8 mixed-precision training; support and quality depend on hardware and scaling.'},
   {id:'int8', name:'INT8', bytes:1, s:1, i:7, kind:'int', levels:255,
    desc:'8-bit integers with one scale per tensor or channel (this demo: symmetric absmax, 255 levels). The workhorse of CPU and edge inference.'},
   {id:'int4', name:'INT4', bytes:0.5, s:1, i:3, kind:'int', levels:15,
-   desc:'Just 15 levels. With smart grouping (GPTQ, AWQ, GGUF Q4) this runs 70B models on gaming GPUs.'}
+   desc:'4-bit integers provide only 15 signed levels here. Grouped methods such as GPTQ, AWQ, and GGUF Q4 can make large models feasible on smaller GPUs, with a quality trade-off.'}
 ];
 let curFmt = FORMATS[1];
 
@@ -1645,7 +1715,7 @@ function drawQuantViz(){
   });
   WEIGHTS.forEach(w=> s += `<circle cx="${X(w).toFixed(1)}" cy="${topY}" r="3.2" fill="${C.g40}"/>`);
   qs.forEach(q=> s += `<circle cx="${X(q).toFixed(1)}" cy="${axY}" r="3.6" fill="${C.p50}"/>`);
-  s += `<text x="${x0}" y="${topY-14}" style="font-size:10px" fill="${C.g50}">original (BF16)</text>`;
+  s += `<text x="${x0}" y="${topY-14}" style="font-size:10px" fill="${C.g50}">illustrative source values</text>`;
   s += `<text x="${x0}" y="${axY-14}" style="font-size:10px" fill="${C.p60}">stored as ${curFmt.name}</text>`;
   s += '</svg>';
   quantviz.innerHTML = s;
@@ -1721,6 +1791,8 @@ function setView(v){
   const q = v==='quant';
   vwExplore.setAttribute('aria-pressed', !q);
   vwQuant.setAttribute('aria-pressed', q);
+  vwExplore.setAttribute('aria-selected', !q);
+  vwQuant.setAttribute('aria-selected', q);
   explorepage.classList.toggle('hiddenpage', q);
   quantpage.classList.toggle('active', q);
   modelbarEl.style.visibility = q? 'hidden' : 'visible';
@@ -1789,7 +1861,7 @@ function buildTour(tok, pos, n){
     MHA:`Now "${tok}" builds ${a.qHeads} separate queries, one per head, each with private keys and values. Each head is free to hunt for something different among the ${pos} tokens before it.`,
     GQA:`"${tok}" builds ${a.qHeads} queries, but groups of ${Math.round(a.qHeads/a.kvHeads)} share one of ${a.kvHeads} K/V heads. Nearly MHA's quality, with a much smaller cache for "${tok}" to be remembered in later.`,
     MQA:`"${tok}" builds ${a.qHeads} queries that all read a single shared K/V head, the most extreme cache saving there is.`,
-    MLA:`"${tok}"'s vector is compressed into a ${a.latent}-dim latent; the full K and V are re-expanded from it on demand. Only that small latent is cached for the tokens that come after.`
+    MLA:`"${tok}"'s vector is represented in the cache by a ${mlaCacheInfo(a).label}; full K and V are re-expanded from that cached state on demand.`
   };
   steps.push({path:[S('model'),S('block'),S('attn')], text:attnTxt[a.attn]});
   steps.push({path:[S('model'),S('block'),S('attn'),S('sdpa')],
@@ -1803,17 +1875,17 @@ function buildTour(tok, pos, n){
     steps.push({path:[S('model'),S('block'),S('moe')],
       text:`The fork in the road: a router scores all ${a.experts} experts for "${tok}" and wakes only its top ${a.topk}, say E${picks.join(', E')}, …${a.shared?', plus the always-on shared expert':''}. The token sitting next to "${tok}" would light up a different set. This is the moment the giant model becomes cheap.`});
     steps.push({path:[S('model'),S('block'),S('moe'),S('router')],
-      text:`The choice itself is one tiny matmul: ${a.experts} scores, keep ${a.topk}, softmax the survivors. The resulting gate weights decide how much of each expert's output flows into "${tok}"'s vector.`});
+      text:`The choice itself is one tiny matmul: ${a.experts} scores, then ${routerGateInfo(a).tour}. The resulting gate weights decide how much of each expert's output flows into "${tok}"'s vector.`});
   } else {
     steps.push({path:[S('model'),S('block'),S('ffn')],
-      text:`Second sublayer: the MLP expands "${tok}"'s ${a.d} numbers to ${a.ffnDim}, bends them through ${a.gated ? 'a '+a.act+' gate' : a.act}, and contracts back down. No other tokens involved, this is where the model's stored knowledge gets applied to "${tok}" alone.`});
+      text:`Second sublayer: the MLP expands "${tok}"'s ${a.d} numbers to ${a.ffnDim}, bends them through ${a.gated ? 'a '+a.act+' gate' : a.act}, and contracts back down. No other tokens are mixed here; learned feature transforms are applied to "${tok}"'s current representation.`});
   }
   steps.push({path:[S('model'),S('block')],
     text:`${par?'Both branch outputs are added onto the stream together.':'Second refinement added.'} That's one block done. "${tok}" now repeats all of this ${a.layers-1} more times with different learned weights${moe?' and different expert draws':''}, growing more abstract at each pass.`});
   steps.push({path:[S('model'),S('norm','final')],
     text:`After block ${a.layers}, one final ${a.norm} steadies "${tok}"'s vector before it gets scored.`});
   steps.push({path:[S('model'),S('lmhead')],
-    text:`"${tok}"'s finished vector, by now a compressed summary of everything up to and including it, is scored against all ${a.vocab} vocabulary entries at once, and softmax turns those scores into next-token probabilities.`});
+    text:`"${tok}"'s finished vector, by now a representation of the preceding context, is scored against all ${a.vocab} vocabulary entries at once. Softmax turns those illustrative scores into next-token probabilities; this page does not run the model.`});
   steps.push({path:[S('model')],
     text:`The whole journey. Click any token chip to follow a different token, or click any outlined block to keep digging on your own.`});
   return steps;
@@ -2178,6 +2250,7 @@ function applyCfg(cfg, srcUrl){
     const m = srcUrl && String(srcUrl).match(/huggingface\.co\/([^\/]+\/[^\/]+)/);
     const label = m ? m[1] : ((cfg.model_type||cfg.text_config&&cfg.text_config.model_type) ? (cfg.model_type||cfg.text_config.model_type)+' (custom)' : 'custom model');
     const {arch:built, report} = buildCustomArch(cfg, label);
+    built.sources = srcUrl ? [{label:'config.json used',url:srcUrl}] : [];
     ARCHS.custom = built;
     let pill = document.querySelector('.mpill[data-k="custom"]');
     if(!pill){
